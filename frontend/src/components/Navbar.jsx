@@ -36,9 +36,14 @@ export default function Navbar() {
           ))}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
-            Log in <span aria-hidden="true">&rarr;</span>
+          <div className='flex divide-x '>
+          <a href="#" className="text-sm pr-4 font-semibold leading-6 text-gray-900">
+            Cont <span aria-hidden="true"></span>
           </a>
+          <a href="#" className="text-sm pl-4 font-semibold leading-6 text-gray-900">
+            Lang <span aria-hidden="true"></span>
+          </a>
+          </div>
         </div>
       </nav>
       <div className={open ? "block" : "hidden"}>
