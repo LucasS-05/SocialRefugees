@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
-    nume: {
+    name: {
       type: String,
       required: true,
       min: 2,
@@ -31,6 +31,11 @@ const UserSchema = new mongoose.Schema(
     group: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Group",
+    },
+    role: {
+      type: Array,
+      enum: ["guest", "refugee", "helper", "admin"],
+      default: ["guest"],
     },
     location: String,
   },
