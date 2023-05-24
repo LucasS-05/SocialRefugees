@@ -11,7 +11,7 @@ const UserSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      max: 50,
+      max: 30,
       unique: true,
     },
     phone: {
@@ -33,7 +33,7 @@ const UserSchema = new mongoose.Schema(
       ref: "Group",
     },
     role: {
-      type: Array,
+      type: [String],
       enum: ["guest", "refugee", "helper", "admin"],
       default: ["guest"],
     },

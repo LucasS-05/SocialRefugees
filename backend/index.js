@@ -7,6 +7,10 @@ import helmet from "helmet";
 import morgan from "morgan";
 import multer from "multer";
 
+/* import { users, group } from "./mockData.js";
+import User from "./models/User.js";
+import Group from "./models/Group.js"; */
+
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -39,10 +43,10 @@ app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 /* File storage */
 
 const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
+  destination: function (req, file, cb) {
     cb(null, "public/assets");
   },
-  filename: function(req, file, cb) {
+  filename: function (req, file, cb) {
     cb(null, file.originalname);
   },
 });
@@ -51,7 +55,6 @@ const upload = multer({ storage });
 /* Routes with files */
 app.post("/auth/register", upload.single("picture"), register);
 app.post("/groups", verifyToken, upload.single("picture"), createGroup);
-
 
 /* Routes */
 app.use("/auth", authRoutes);
@@ -68,5 +71,9 @@ mongoose
   })
   .then(() => {
     app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
+
+    //DO NOT UNCOMMENT
+    // User.insertMany(users);
+    // Group.insertMany(group);
   })
   .catch((error) => console.log(`${error} did not connect`));
