@@ -1,13 +1,18 @@
-import { useState } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
+import { userContext } from "../userContext";
 
 const navigation = [
   { name: "Home", href: "/" },
-  { name: "Features", href: "#" },
-  { name: "Marketplace", href: "#" },
-  { name: "Company", href: "#" },
+  { name: "About us", href: "#" },
+  { name: "Donate", href: "#" },
 ];
 
 export default function Navbar() {
+  const { user, setUser } = useContext(userContext);
+
+  const [toggle, setToggle] = useState(false);
+  console.log(user);
+
   const [open, setOpen] = useState(false);
   return (
     <header className="bg-white absolute w-full px-2 sm:px-4 lg:px-8 xl:px-16">
@@ -18,7 +23,7 @@ export default function Navbar() {
         <div className="flex lg:hidden">
           <button
             type="button"
-            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+            className="-m-2.5 inline-flex items-center justify-center rounded-lg p-2.5 text-gray-700"
             onClick={() => setOpen(true)}
           >
             O<span className="sr-only">Open main menu</span>
@@ -36,20 +41,82 @@ export default function Navbar() {
           ))}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <div className="flex divide-x ">
-            <a
-              href="/login"
-              className="text-sm pr-4 font-semibold leading-6 text-gray-900"
-            >
-              Cont <span aria-hidden="true"></span>
-            </a>
-            <a
-              href="#"
-              className="text-sm pl-4 font-semibold leading-6 text-gray-900"
-            >
-              Lang <span aria-hidden="true"></span>
-            </a>
-          </div>
+          {user ? (
+            <div class="relative inline-block text-left">
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setToggle(!toggle)}
+                  class="inline-flex w-full justify-center gap-x-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                  id="menu-button"
+                  aria-expanded="true"
+                  aria-haspopup="true"
+                >
+                  Account
+                  <svg
+                    class="-mr-1 h-5 w-5 text-gray-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div
+                class={`${
+                  !toggle ? "hidden" : ""
+                } absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white shadow ring-1 ring-black ring-opacity-5 focus:outline-none`}
+                role="menu"
+                aria-orientation="vertical"
+                aria-labelledby="menu-button"
+                tabindex="-1"
+              >
+                <div class="py-1" role="none">
+                  <a
+                    href="#"
+                    class="text-gray-700 block px-4 py-2 text-sm font-medium"
+                    role="menuitem"
+                    tabindex="-1"
+                    id="menu-item-0"
+                  >
+                    Account settings
+                  </a>
+                  <form method="POST" action="#" role="none">
+                    <button
+                      type="button"
+                      onClick={() => setUser(null)}
+                      class="text-gray-700 block w-full px-4 py-2 text-left text-sm font-medium"
+                      role="menuitem"
+                      tabindex="-1"
+                      id="menu-item-3"
+                    >
+                      Sign out
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex divide-x py-1.5">
+              <a
+                href="/login"
+                className="text-sm pr-4 font-semibold leading-6 text-gray-900"
+              >
+                Log in <span aria-hidden="true"></span>
+              </a>
+              <a
+                href="#"
+                className="text-sm pl-4 font-semibold leading-6 text-gray-900"
+              >
+                Lang <span aria-hidden="true"></span>
+              </a>
+            </div>
+          )}
         </div>
       </nav>
       <div className={open ? "block" : "hidden"}>
@@ -61,7 +128,7 @@ export default function Navbar() {
             </a>
             <button
               type="button"
-              className="-m-2.5 rounded-md p-2.5 text-gray-700"
+              className="-m-2.5 rounded-lg p-2.5 text-gray-700"
               onClick={() => setOpen(false)}
             >
               X<span className="sr-only">Close menu</span>

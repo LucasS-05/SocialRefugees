@@ -18,7 +18,7 @@ export const users = [
     picturePath: "image.jpg",
     role: ["admin"],
     location: "Deva, Hunedoara",
-    group: groupId[0],
+    group: groupId,
   },
   {
     _id: userId[1],
@@ -27,8 +27,8 @@ export const users = [
     phone : "073565678",
     password: "hash128",
     picturePath: "image2.jpg",
-    role: "refugee",
-    locatie: "Petrosani, Hunedoara",
+    role: ["refugee"],
+    location: "Petrosani, Hunedoara",
   }
 ]
 

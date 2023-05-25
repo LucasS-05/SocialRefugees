@@ -5,8 +5,17 @@ import yellow from "../assets/abstractyellow.jpg";
 import { useState } from "preact/hooks";
 import { route } from "preact-router";
 
-const onSubmit = (data) => {
-  console.log(Object.fromEntries(data.entries()));
+const onSubmit = async (data) => {
+  try {
+    fetch("http://localhost:3001/auth/register", {
+      method: "POST",
+      body: data,
+    });
+  } catch (e) {
+    console.log(e);
+  } finally {
+    route("/login");
+  }
 };
 
 function LeftPanel({ change, setChange }) {
@@ -26,7 +35,6 @@ function LeftPanel({ change, setChange }) {
       const data = new FormData(formElement);
       data.append("role", selected);
       onSubmit(data);
-      route("/login");
     }
   };
   return (
@@ -63,27 +71,29 @@ function LeftPanel({ change, setChange }) {
                 placeholder="Enter your password"
               />
               <div className="relative flex flex-1 flex-wrap sm:space-x-6 justify-between items-center">
-                <p className="shrink-0 mb-1 block text-md sm:text-lg font-semibold leading-6 text-gray-900">
+                <p className="shrink-0 mr-2 mb-1 block text-md sm:text-lg font-semibold leading-6 text-gray-900">
                   You are a
                 </p>
                 <div className="flex flex-1 grow-[6]">
                   <button
                     type="button"
                     onClick={() => setSelected("helper")}
-                    className={` ${selected === "helper"
-                        ? "text-white hover:bg-yellow-400 focus-visible:outline-yellow-600"
+                    className={` ${
+                      selected === "helper"
+                        ? "text-white hover:bg-yellow-400 bg-yellow-500 focus-visible:outline-yellow-600"
                         : "text-gray-900 bg-transparent"
-                      } rounded-l-xl ring-1 ring-inset ring-gray-300 grow bg-yellow-500 px-6 py-3.5 text-sm sm:text-lg font-medium  shadow-sm  focus-visible:outline `}
+                    } rounded-l-xl ring-1 ring-inset ring-gray-300 grow text-black px-6 py-3.5 text-sm sm:text-lg font-medium  shadow-sm  focus-visible:outline `}
                   >
                     Helper
                   </button>
                   <button
                     type="button"
                     onClick={() => setSelected("refugee")}
-                    className={` ${selected === "refugee"
-                        ? "text-white hover:bg-yellow-400 focus-visible:outline-yellow-600"
+                    className={` ${
+                      selected === "refugee"
+                        ? "text-white hover:bg-yellow-400 bg-yellow-500 focus-visible:outline-yellow-600"
                         : "text-gray-900 ring-1 ring-inset ring-gray-300 bg-transparent"
-                      } rounded-r-xl bg-yellow-500 px-6 py-3.5 text-sm grow sm:text-lg font-medium shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
+                    } rounded-r-xl px-6 py-3.5 text-sm grow sm:text-lg font-medium shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
                   >
                     Refugee
                   </button>

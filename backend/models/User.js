@@ -16,8 +16,8 @@ const UserSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      required: false,
       unique: true,
+      sparse: true,
     },
     password: {
       type: String,
@@ -26,6 +26,7 @@ const UserSchema = new mongoose.Schema(
     },
     picturePath: {
       type: String,
+      //Default profile pic in assets
       default: "",
     },
     group: {

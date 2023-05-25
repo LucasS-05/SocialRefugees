@@ -7,9 +7,9 @@ import helmet from "helmet";
 import morgan from "morgan";
 import multer from "multer";
 
-/* import { users, group } from "./mockData.js";
+import { users, group } from "./mockData.js";
 import User from "./models/User.js";
-import Group from "./models/Group.js"; */
+import Group from "./models/Group.js";
 
 import path from "path";
 import { fileURLToPath } from "url";

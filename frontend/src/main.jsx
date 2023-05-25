@@ -1,5 +1,11 @@
-import { render } from 'preact'
-import { App } from './app.jsx'
-import './index.css'
+import { render } from "preact";
+import { App } from "./app.jsx";
+import "./index.css";
+import Context from "./userContext.jsx";
 
-render(<App />, document.getElementById('app'))
+render(
+  <Context>
+    <App />
+  </Context>,
+  document.getElementById("app")
+);

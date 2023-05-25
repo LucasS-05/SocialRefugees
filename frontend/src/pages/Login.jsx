@@ -3,6 +3,8 @@ import SplitScreen from "../layouts/SplitScreen";
 import Input from "../components/Input";
 import red from "../assets/abstractred.jpg";
 import { route } from "preact-router";
+import { useContext, useState } from "preact/hooks";
+import { userContext } from "../userContext";
 
 /* <div className="relative my-8">
   <div className="absolute inset-0 flex items-center" aria-hidden="true">
@@ -15,28 +17,41 @@ import { route } from "preact-router";
   </div>
 </div>; */
 
-const onSubmit = (data) => {
-  console.log(Object.fromEntries(data.entries()));
-};
-
-const handleSubmit = (e) => {
-  e.preventDefault();
-
-  console.log("dababy");
-  const formElement = e.target;
-  const isValid = formElement.checkValidity();
-
-  const invalidField = formElement.querySelector(":invalid");
-  invalidField?.focus();
-
-  if (isValid) {
-    const data = new FormData(formElement);
-    onSubmit(data);
-    console.log(data);
-  }
-};
-
 function LeftPanel() {
+  const [ok, setOk] = useState("");
+
+  const { setUser } = useContext(userContext);
+
+  const onSubmit = async (data) => {
+    const response = await fetch("http://localhost:3001/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(data)),
+    });
+    const message = await response.json();
+    console.log(message);
+    if (response.status == 400) setOk(message);
+    else {
+      setUser(message.user);
+      route("/");
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const formElement = e.target;
+    const isValid = formElement.checkValidity();
+
+    const invalidField = formElement.querySelector(":invalid");
+    invalidField?.focus();
+
+    if (isValid) {
+      const data = new FormData(formElement);
+      onSubmit(data);
+      console.log(data);
+    }
+  };
   return (
     <div className="h-full relative">
       <Navbar />
@@ -48,21 +63,39 @@ function LeftPanel() {
             </h2>
           </div>
           <form onSubmit={handleSubmit} className="">
-            <div className="flex flex-col space-y-8 mt-12">
-              <Input
-                id="email"
-                type="email"
-                name="email"
-                error="not a valid email address"
-                placeholder="you@example.com"
-              />
-              <Input
-                id="password"
-                type="password"
-                name="password"
-                error="Your password is incorrect"
-                placeholder="password"
-              />
+            <div className="flex flex-col space-y-2 mt-12">
+              <div>
+                <Input
+                  id="email"
+                  type="email"
+                  name="email"
+                  error="not a valid email address"
+                  placeholder="you@example.com"
+                />
+                <p
+                  className={`mt-2 text-sm sm:text-lg font-semibold text-red-500 ${
+                    ok?.user ? "visible" : "invisible"
+                  }`}
+                >
+                  {ok?.user}&#10240;
+                </p>
+              </div>
+              <div>
+                <Input
+                  id="password"
+                  type="password"
+                  name="password"
+                  error="Your password is incorrect"
+                  placeholder="password"
+                />
+                <p
+                  className={`mt-2 text-sm sm:text-lg mb-4 font-semibold text-red-500 ${
+                    ok?.password ? "visible" : "invisible"
+                  }`}
+                >
+                  {ok?.password}&#10240;
+                </p>
+              </div>
               <button
                 type="submit"
                 className="rounded-xl w-full bg-red-500 px-6 py-3.5 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
