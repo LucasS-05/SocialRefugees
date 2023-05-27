@@ -5,6 +5,8 @@ SocialRefugees is a web application that aims to connect refugees with volunteer
 Technologies Used
 The SocialRefugees project uses a variety of technologies to create a robust and user-friendly web application. These technologies include:
 
+DEVELOPMENT ENVIRONMENT : VITE
+
 FRONTEND:
 - PREACT
 - TAILWINDCSS
@@ -17,7 +19,6 @@ Repository tree
 
 ```bash
 ├── backend
-│   ├── \
 │   ├── assets
 │   ├── controllers
 │   │   ├── auth.js
@@ -97,7 +98,7 @@ Start the frontend server using npm run dev
 
 Start the backend server using node index.js ( Make sure to have mongodb installed and running - MONGO_URL="mongodb://127.0.0.1:27017/"
 
-Open your web browser and navigate to http://localhost:3000
+Open your web browser and navigate to http://localhost:5173
 
 
 # Contributing
