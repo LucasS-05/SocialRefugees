@@ -20,6 +20,8 @@ import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import groupRoutes from "./routes/groups.js";
 import { verifyToken } from "./middlewares/auth.js";
+import { updateUser } from "./controllers/users.js";
+import { uploadPicture } from "./controllers/uploads.js";
 
 /* CONFIG */
 
@@ -43,18 +45,21 @@ app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 /* File storage */
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "public/assets");
+  destination: function(req, file, cb) {
+    cb(null, "./assets");
   },
-  filename: function (req, file, cb) {
+  filename: function(req, file, cb) {
     cb(null, file.originalname);
   },
 });
 
 const upload = multer({ storage });
+
 /* Routes with files */
 app.post("/auth/register", upload.single("picture"), register);
 app.post("/groups", verifyToken, upload.single("picture"), createGroup);
+app.post("/uploads", upload.single("picture"), verifyToken, uploadPicture);
+app.put("/users/:id", verifyToken, updateUser);
 
 /* Routes */
 app.use("/auth", authRoutes);

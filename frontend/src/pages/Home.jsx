@@ -1,8 +1,10 @@
-import { useState } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 import Navbar from "../components/Navbar";
 import SplitScreen from "../layouts/SplitScreen";
 import red from "../assets/redback.webp";
 import yellow from "../assets/yellowback.jpg";
+import { route } from "preact-router";
+import { userContext } from "../userContext";
 
 const subtitlu = ["For people who can help", "For people who need help"];
 
@@ -12,6 +14,7 @@ const titlu = [
 ];
 
 function LeftPanel({ change, setChange }) {
+  const {user} = useContext(userContext)
   return (
     <div className="h-full relative">
       <Navbar />
@@ -27,7 +30,8 @@ function LeftPanel({ change, setChange }) {
             {change ? (
               <button
                 type="button"
-                className="rounded-xl w-fit bg-red-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                onClick={()=>route("/groups")}
+                className="rounded-xl w-fit bg-red-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-red-400 "
               >
                 Lista de cereri →
               </button>
@@ -35,7 +39,7 @@ function LeftPanel({ change, setChange }) {
               <div className="flex items-center gap-x-6">
                 <button
                   type="button"
-                  className={`rounded-xl w-fit bg-yellow-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-yellow-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600`}
+                  className={`rounded-xl w-fit bg-yellow-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-yellow-400 `}
                 >
                   Make a request →
                 </button>

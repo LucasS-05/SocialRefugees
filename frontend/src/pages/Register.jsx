@@ -41,14 +41,14 @@ function LeftPanel({ change, setChange }) {
     <div className="h-full relative">
       <Navbar />
       <div className="flex flex-col px-2 sm:px-4 lg:px-8 xl:px-16 justify-center h-full">
-        <div className="max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl px-4 sm:px-6 lg:px-8 ">
           <div>
             <h2 className="text-3xl sm:text-4xl font-bold leading-9 tracking-tight text-gray-900">
               Ready to contribute to the world?
             </h2>
           </div>
-          <form onSubmit={handleSubmit} className="">
-            <div className="flex flex-col space-y-8 mt-12">
+          <form onSubmit={handleSubmit}>
+            <div className="flex flex-col space-y-4 md:space-y-8 mt-8 sm:mt-12">
               <Input
                 id="name"
                 type="text"
@@ -68,13 +68,13 @@ function LeftPanel({ change, setChange }) {
                 type="password"
                 name="password"
                 error="Your password is incorrect"
-                placeholder="Enter your password"
+                placeholder="Enter a password"
               />
               <div className="relative flex flex-1 flex-wrap sm:space-x-6 justify-between items-center">
                 <p className="shrink-0 mr-2 mb-1 block text-md sm:text-lg font-semibold leading-6 text-gray-900">
                   You are a
                 </p>
-                <div className="flex flex-1 grow-[6]">
+                <div className="flex flex-1">
                   <button
                     type="button"
                     onClick={() => setSelected("helper")}
@@ -82,7 +82,7 @@ function LeftPanel({ change, setChange }) {
                       selected === "helper"
                         ? "text-white hover:bg-yellow-400 bg-yellow-500 focus-visible:outline-yellow-600"
                         : "text-gray-900 bg-transparent"
-                    } rounded-l-xl ring-1 ring-inset ring-gray-300 grow text-black px-6 py-3.5 text-sm sm:text-lg font-medium  shadow-sm  focus-visible:outline `}
+                    } rounded-l-xl ring-1 ring-inset ring-gray-300 grow text-black px-6 py-3 sm:py-3.5 text-sm sm:text-lg font-medium  shadow-sm  focus-visible:outline `}
                   >
                     Helper
                   </button>
@@ -93,7 +93,7 @@ function LeftPanel({ change, setChange }) {
                       selected === "refugee"
                         ? "text-white hover:bg-yellow-400 bg-yellow-500 focus-visible:outline-yellow-600"
                         : "text-gray-900 ring-1 ring-inset ring-gray-300 bg-transparent"
-                    } rounded-r-xl px-6 py-3.5 text-sm grow sm:text-lg font-medium shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
+                    } rounded-r-xl px-6 py-3 sm:py-3.5 text-sm grow sm:text-lg font-medium shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
                   >
                     Refugee
                   </button>
@@ -101,7 +101,7 @@ function LeftPanel({ change, setChange }) {
               </div>
               <button
                 type="submit"
-                className="rounded-xl w-full bg-yellow-500 px-6 py-3.5 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-yellow-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                className="rounded-xl w-full bg-yellow-500 px-6 py-3 sm:py-3.5 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-yellow-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
               >
                 Sign up
               </button>
@@ -111,10 +111,10 @@ function LeftPanel({ change, setChange }) {
       </div>
       <button
         onClick={() => route("/login")}
-        className="absolute flex items-center px-4 sm:px-8 lg:px-16 py-6 w-full bg-yellow-500 hover:bg-yellow-400 bottom-0"
+        className="absolute flex items-center px-4 xl:px-16 py-6 w-full bg-yellow-500 hover:bg-yellow-400 bottom-0"
       >
         <div className="px-4 sm:px-6 px-8">
-          <h3 className="text-xl sm:text-3xl text-white font-bold tracking-wide">
+          <h3 className="text-lg sm:text-2xl text-white font-bold tracking-wide">
             Already have an account? Sign in!
           </h3>
         </div>

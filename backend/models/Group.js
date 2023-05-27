@@ -2,19 +2,26 @@ import mongoose from "mongoose";
 
 const groupSchema = mongoose.Schema(
   {
-    ownerId: {
-      type: String,
-      required: true,
+    administeredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
-    users: [
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    members: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
     ],
-    needs: {
-      type: Array,
-    },
+    needs: [
+      {
+        type: String,
+      },
+    ],
     urgency: String,
   },
   { timestamps: true }

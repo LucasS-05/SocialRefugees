@@ -1,5 +1,6 @@
 import { useContext, useState } from "preact/hooks";
 import { userContext } from "../userContext";
+import { route } from "preact-router";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -7,23 +8,26 @@ const navigation = [
   { name: "Donate", href: "#" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ position }) {
   const { user, setUser } = useContext(userContext);
 
   const [toggle, setToggle] = useState(false);
-  console.log(user);
 
   const [open, setOpen] = useState(false);
   return (
-    <header className="bg-white absolute w-full px-2 sm:px-4 lg:px-8 xl:px-16">
+    <header
+      className={`bg-white ${
+        position == "relative" ? "relative" : "absolute"
+      } z-10 w-full px-2 sm:px-4 lg:px-8 xl:px-16`}
+    >
       <nav
-        className="mx-auto flex items-center justify-between py-6 px-4 sm:px-6 lg:px-8"
+        className="mx-auto flex items-center flex-row-reverse lg:flex-row justify-between py-6 px-4 sm:px-6 lg:px-8"
         aria-label="Global"
       >
         <div className="flex lg:hidden">
           <button
             type="button"
-            className="-m-2.5 inline-flex items-center justify-center rounded-lg p-2.5 text-gray-700"
+            className="-m-2.5 justify-self-end inline-flex items-center justify-center rounded-lg p-2.5 text-gray-700"
             onClick={() => setOpen(true)}
           >
             O<span className="sr-only">Open main menu</span>
@@ -78,7 +82,7 @@ export default function Navbar() {
               >
                 <div class="py-1" role="none">
                   <a
-                    href="#"
+                    href="/account"
                     class="text-gray-700 block px-4 py-2 text-sm font-medium"
                     role="menuitem"
                     tabindex="-1"
@@ -89,7 +93,11 @@ export default function Navbar() {
                   <form method="POST" action="#" role="none">
                     <button
                       type="button"
-                      onClick={() => setUser(null)}
+                      onClick={() => (
+                        setUser(null),
+                        localStorage.removeItem("token"),
+                        route("/")
+                      )}
                       class="text-gray-700 block w-full px-4 py-2 text-left text-sm font-medium"
                       role="menuitem"
                       tabindex="-1"

@@ -23,17 +23,23 @@ function LeftPanel() {
   const { setUser } = useContext(userContext);
 
   const onSubmit = async (data) => {
-    const response = await fetch("http://localhost:3001/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(Object.fromEntries(data)),
-    });
-    const message = await response.json();
-    console.log(message);
-    if (response.status == 400) setOk(message);
-    else {
-      setUser(message.user);
-      route("/");
+    try {
+      const response = await fetch("http://192.168.0.103:3001/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(data)),
+      });
+      const message = await response.json();
+      console.log(message);
+      if (response.status == 400) setOk(message);
+      else if (!response.ok) setOk("server error");
+      else {
+        setUser(message.user);
+        localStorage.setItem("token", message.token);
+        route("/");
+      }
+    } catch (error) {
+      setOk("server error");
     }
   };
 
@@ -52,6 +58,7 @@ function LeftPanel() {
       console.log(data);
     }
   };
+
   return (
     <div className="h-full relative">
       <Navbar />
@@ -63,7 +70,7 @@ function LeftPanel() {
             </h2>
           </div>
           <form onSubmit={handleSubmit} className="">
-            <div className="flex flex-col space-y-2 mt-12">
+            <div className="flex flex-col space-y-4 md:space-y-8 mt-12">
               <div>
                 <Input
                   id="email"
@@ -74,10 +81,10 @@ function LeftPanel() {
                 />
                 <p
                   className={`mt-2 text-sm sm:text-lg font-semibold text-red-500 ${
-                    ok?.user ? "visible" : "invisible"
+                    ok.user ? "visible" : "invisible"
                   }`}
                 >
-                  {ok?.user}&#10240;
+                  {ok.user}
                 </p>
               </div>
               <div>
@@ -86,22 +93,33 @@ function LeftPanel() {
                   type="password"
                   name="password"
                   error="Your password is incorrect"
-                  placeholder="password"
+                  placeholder="Enter your password"
                 />
                 <p
                   className={`mt-2 text-sm sm:text-lg mb-4 font-semibold text-red-500 ${
-                    ok?.password ? "visible" : "invisible"
+                    ok.password ? "visible" : "invisible"
                   }`}
                 >
-                  {ok?.password}&#10240;
+                  {ok.password}
                 </p>
               </div>
-              <button
-                type="submit"
-                className="rounded-xl w-full bg-red-500 px-6 py-3.5 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-              >
-                Sign in
-              </button>
+              <div>
+                <button
+                  type="submit"
+                  className="rounded-xl w-full bg-red-500 px-6 py-3.5 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                >
+                  Sign in
+                </button>
+                <p
+                  className={`mt-2 text-sm sm:text-lg font-semibold text-red-500 ${
+                    ok === "server error" ? "visible" : "invisible"
+                  }`}
+                >
+                  {ok === "server error"
+                    ? "An error occured logging in."
+                    : "bac"}
+                </p>
+              </div>
             </div>
           </form>
         </div>
@@ -111,7 +129,7 @@ function LeftPanel() {
         className="absolute flex items-center px-2 sm:px-4 lg:px-8 xl:px-16 py-6 w-full bg-red-500 hover:bg-red-400 bottom-0"
       >
         <div className="px-4 sm:px-6 px-8">
-          <h3 className="text-xl sm:text-3xl text-white font-bold tracking-wide">
+          <h3 className="text-lg sm:text-2xl text-white font-bold tracking-wide">
             Don't have an account? Sign up!
           </h3>
         </div>

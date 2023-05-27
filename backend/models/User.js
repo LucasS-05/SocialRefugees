@@ -34,9 +34,9 @@ const UserSchema = new mongoose.Schema(
       ref: "Group",
     },
     role: {
-      type: [String],
+      type: String,
       enum: ["guest", "refugee", "helper", "admin"],
-      default: ["guest"],
+      default: "guest",
     },
     location: String,
   },

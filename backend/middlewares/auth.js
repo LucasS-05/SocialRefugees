@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 
 
 /* Pentru authorization */
-
 export const verifyToken = async (req, res, next) => {
   try {
     let token = req.header("Authorization");
@@ -10,8 +9,6 @@ export const verifyToken = async (req, res, next) => {
       return res.status(403).send("Access Denied");
     }
     if (token.startsWith("Bearer")) {
-      //luam beareru si trim-uim stringu sa avem numa ce-i dupa "Bearer" aka
-      //tokenu
       token = token.slice(7, token.length).trimLeft();
 
       const verified = jwt.verify(token, process.env.JWT_SECRET);

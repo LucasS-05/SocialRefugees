@@ -25,10 +25,19 @@ export const createGroup = async (req, res) => {
 };
 
 /* READ */
+export const getBucket = async (req, res) => {
+  try{
+    const group = await Group.find({administeredBy: null});
+    res.status(200).json(group);
+  }catch(err){
+    res.status(404).json({ message: err.message });
+  }
+}
 
 export const getGroups = async (req, res) => {
   try{
     const group = await Group.find();
+    group.filter((e)=>{return e.administeredBy > 0})
     res.status(200).json(group);
   }catch(err){
     res.status(404).json({ message: err.message });
@@ -44,3 +53,4 @@ export const getUserGroup = async (req, res) => {
     res.status(404).json({ message: err.message });
   }
 }
+
