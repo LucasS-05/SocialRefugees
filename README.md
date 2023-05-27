@@ -1,6 +1,6 @@
 # SocialRefugees
 
-SocialRefugees is a web application that aims to connect refugees with volunteers and organizations that can provide them with support and assistance. The project was created by LucasS-05 and is hosted on GitHub.
+SocialRefugees is a web application that aims to connect refugees with volunteers and organizations that can provide them with support and assistance.
 
 Technologies Used
 The SocialRefugees project uses a variety of technologies to create a robust and user-friendly web application. These technologies include:
@@ -83,7 +83,16 @@ The SocialRefugees web application includes a number of features that make it ea
 
 - User registration and login
 - Volunteer and organization registration
+- Password encrypting with bcrypt
+- Server security using JWT tokens
+- Ease of scalability thanks to MongoDB
+
+Roadmap: 
+
+- Changing the profile picture 
+- Refugee management using a "bucket", a collection where Non-profit Organizations (admins) can take under management individual groups and then publish them to the public collection where helpers can offer to help. ( due to legal reasons, we cannot welcome strangers into our homes just like that :) )
 - Search functionality to find volunteers and organizations
+- Creating groups (from refugees' POV)
 - Messaging system to communicate with volunteers and organizations
 - Donation system to support refugees
 
