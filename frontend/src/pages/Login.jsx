@@ -3,8 +3,9 @@ import SplitScreen from "../layouts/SplitScreen";
 import Input from "../components/Input";
 import red from "../assets/abstractred.jpg";
 import { route } from "preact-router";
-import { useContext, useState } from "preact/hooks";
+import { useContext, useEffect, useRef, useState } from "preact/hooks";
 import { userContext } from "../userContext";
+import { gsap } from "gsap";
 
 /* <div className="relative my-8">
   <div className="absolute inset-0 flex items-center" aria-hidden="true">
@@ -17,6 +18,7 @@ import { userContext } from "../userContext";
   </div>
 </div>; */
 
+
 function LeftPanel() {
   const [ok, setOk] = useState("");
 
@@ -24,7 +26,7 @@ function LeftPanel() {
 
   const onSubmit = async (data) => {
     try {
-      const response = await fetch("http://192.168.0.103:3001/auth/login", {
+      const response = await fetch("http://localhost:3001/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(Object.fromEntries(data)),
@@ -36,7 +38,7 @@ function LeftPanel() {
       else {
         setUser(message.user);
         localStorage.setItem("token", message.token);
-        route("/");
+        route("/account");
       }
     } catch (error) {
       setOk("server error");
@@ -55,7 +57,6 @@ function LeftPanel() {
     if (isValid) {
       const data = new FormData(formElement);
       onSubmit(data);
-      console.log(data);
     }
   };
 
@@ -80,9 +81,8 @@ function LeftPanel() {
                   placeholder="you@example.com"
                 />
                 <p
-                  className={`mt-2 text-sm sm:text-lg font-semibold text-red-500 ${
-                    ok.user ? "visible" : "invisible"
-                  }`}
+                  className={`mt-2 text-sm sm:text-lg font-semibold text-red-500 ${ok.user ? "visible" : "invisible"
+                    }`}
                 >
                   {ok.user}
                 </p>
@@ -96,9 +96,8 @@ function LeftPanel() {
                   placeholder="Enter your password"
                 />
                 <p
-                  className={`mt-2 text-sm sm:text-lg mb-4 font-semibold text-red-500 ${
-                    ok.password ? "visible" : "invisible"
-                  }`}
+                  className={`mt-2 text-sm sm:text-lg mb-4 font-semibold text-red-500 ${ok.password ? "visible" : "invisible"
+                    }`}
                 >
                   {ok.password}
                 </p>
@@ -111,9 +110,8 @@ function LeftPanel() {
                   Sign in
                 </button>
                 <p
-                  className={`mt-2 text-sm sm:text-lg font-semibold text-red-500 ${
-                    ok === "server error" ? "visible" : "invisible"
-                  }`}
+                  className={`mt-2 text-sm sm:text-lg font-semibold text-red-500 ${ok === "server error" ? "visible" : "invisible"
+                    }`}
                 >
                   {ok === "server error"
                     ? "An error occured logging in."
@@ -150,10 +148,18 @@ function RightPanel() {
 }
 
 export default function Login() {
+  const ref = useRef(null)
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    gsap.fromTo(ref.current, { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power4.inOut" })
+    setLoading(false)
+  }, [])
   return (
-    <SplitScreen>
-      <LeftPanel />
-      <RightPanel />
-    </SplitScreen>
+    <div className={`${loading ? "hidden" : ""}`} ref={ref}>
+      <SplitScreen>
+        <LeftPanel />
+        <RightPanel />
+      </SplitScreen>
+    </div>
   );
 }

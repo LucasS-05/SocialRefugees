@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "gsap": "^3.12.1",
     "preact": "^10.13.1",
     "preact-router": "^4.1.1"
   },
