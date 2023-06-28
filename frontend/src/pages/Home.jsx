@@ -18,47 +18,70 @@ function LeftPanel({ change, setChange, handleAnimation }) {
   const textRefs = useRef([]);
   const { user } = useContext(userContext);
 
+  useEffect(() => {
+    gsap.from([textRefs.current], {
+      delay: 0.1,
+      ease: 'power3.out',
+      y: 256,
+      stagger: {
+        amount: "0.25"
+      }
+    })
+  }, [change])
+
   return (
-    <div className="h-full relative" >
+    <div className="h-full relative overflow-y-hidden" >
       <Navbar />
       <div className="flex flex-col px-2 sm:px-4 lg:px-8 xl:px-16 justify-center h-full">
         <div className="max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl flex flex-col space-y-8">
-            <h2 ref={(el) => (textRefs.current[0] = el)} className="text-2xl sm:text-3xl">
-              {change ? subtitlu[0] : subtitlu[1]}
-            </h2>
-            <h1 ref={(el) => (textRefs.current[1] = el)} className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-semibold tracking-tight leading-tight">
-              {change ? titlu[0] : titlu[1]}
-            </h1>
-            {change ? (
-              <button
-                type="button"
-                onClick={() => user ? route("/groups") : route("/login")}
-                className="rounded-xl w-fit bg-red-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-red-400 "
-              >
-                Lista de cereri →
-              </button>
-            ) : (
-              <div className="flex items-center gap-x-6">
+            <div className="overflow-hidden">
+              <h2 ref={(el) => (textRefs.current[0] = el)} className="text-xl sm:text-3xl">
+                {change ? subtitlu[0] : subtitlu[1]}
+              </h2>
+            </div>
+            <div className="overflow-hidden py-3">
+              <h1 ref={(el) => (textRefs.current[1] = el)} className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-semibold tracking-tight leading-tight">
+                {change ? titlu[0] : titlu[1]}
+              </h1>
+            </div>
+            <div className="overflow-hidden">
+
+              {change ? (
                 <button
                   type="button"
+                  ref={(el) => (textRefs.current[2] = el)}
                   onClick={() => user ? route("/groups") : route("/login")}
-                  className={`rounded-xl w-fit bg-yellow-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-yellow-400 `}
+                  className="rounded-xl w-fit bg-red-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-red-400 "
                 >
-                  Vezi grupurile →
+                  Lista de cereri →
                 </button>
-              </div>
-            )}
+              ) : (
+                <div className="flex items-center gap-x-6">
+                  <button
+                    ref={(el) => (textRefs.current[3] = el)}
+                    type="button"
+                    onClick={() => user ? route("/groups") : route("/login")}
+                    className={`rounded-xl w-fit bg-yellow-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-yellow-400 `}
+                  >
+                    Vezi grupurile →
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
       {change ? (
         <button
+          ref={(el) => (textRefs.current[4] = el)}
           onClick={handleAnimation}
           className="absolute flex items-center px-2 sm:px-4 lg:px-8 xl:px-16 py-6 w-full bg-red-500 hover:bg-red-400 bottom-0"
         >
-          <div className="px-4 sm:px-6 px-8">
-            <h3 className="text-xl sm:text-3xl text-white font-bold tracking-wide">
+          <div
+            className="px-4 sm:px-6 px-8">
+            <h3
+              className="text-xl sm:text-3xl text-white font-bold tracking-wide">
               Esti refugiat?→
             </h3>
           </div>

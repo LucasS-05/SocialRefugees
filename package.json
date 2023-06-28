@@ -1,0 +1,16 @@
+{
+  "name": "socialrefugees",
+  "version": "1.0.0",
+  "description": "SocialRefugees is a web application that aims to connect refugees with volunteers and organizations that can provide them with support and assistance.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"concurrently 'cd frontend && npm run dev' 'cd backend && node index.js'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

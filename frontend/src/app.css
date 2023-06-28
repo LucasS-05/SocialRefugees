@@ -1,4 +1,15 @@
+/* width */
+::-webkit-scrollbar {
+  width: 4px;
+}
 
-body{
-  background-color: #F6ECF0;
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: grey;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
