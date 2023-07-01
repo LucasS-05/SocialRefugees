@@ -104,7 +104,7 @@ function LeftPanel({ change, setChange, handleAnimation }) {
 
 function RightPanel({ change }) {
   return (
-    <div className="h-full rounded-tl-[8rem] overflow-hidden">
+    <div className="h-full rounded-tl-[8rem] overflow-hidden hidden lg:block">
       <img
         loading="lazy"
         src={change ? red : yellow}

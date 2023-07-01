@@ -21,11 +21,11 @@ export default function SplitScreen({ children }) {
   }, []);
 
   return (
-    <div style={{height: vh}} className="relative flex flex-row">
-      <div className="w-full lg:w-1/2 h-full">
+    <div style={{ height: vh }} className="relative flex lg:flex-row flex-col">
+      <div className="w-full h-full lg:w-1/2">
         {left}
       </div>
-      <div className="hidden lg:block w-1/2 h-full">
+      <div className="w-full lg:w-1/2">
         {right}
       </div>
     </div>
