@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Account from "./pages/Account";
 import Groups from "./pages/Groups";
 import Multumim from "./pages/Multumim";
+import CreateGroups from "./pages/CreateGroups"
 
 export function App() {
   return (
@@ -15,6 +16,7 @@ export function App() {
       <Register path="/register" />
       <Account path="/account" />
       <Groups path="/groups" />
+      <CreateGroups path="/creategroup" />
       <Multumim path="/multumim" />
     </Router>
   );

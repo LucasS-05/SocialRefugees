@@ -30,7 +30,7 @@ function LeftPanel({ change, setChange, handleAnimation }) {
   }, [change])
 
   return (
-    <div className="h-full relative overflow-y-hidden" >
+    <div className="h-full relative overflow-y-hidden">
       <Navbar />
       <div className="flex flex-col px-2 sm:px-4 lg:px-8 xl:px-16 justify-center h-full">
         <div className="max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -72,7 +72,7 @@ function LeftPanel({ change, setChange, handleAnimation }) {
           </div>
         </div>
       </div>
-      {change ? (
+      {(change ? (
         <button
           ref={(el) => (textRefs.current[4] = el)}
           onClick={handleAnimation}
@@ -97,7 +97,7 @@ function LeftPanel({ change, setChange, handleAnimation }) {
             </h3>
           </div>
         </button>
-      )}
+      ))}
     </div>
   );
 }
@@ -155,6 +155,10 @@ export default function Home() {
   useEffect(() => {
     gsap.fromTo(ref.current, { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power4.inOut" })
     setLoading(false);
+    return () => {
+      gsap.to(ref.current, { opacity: 0, duration: 1 });
+    };
+
   }, [])
 
   return (

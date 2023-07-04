@@ -26,6 +26,18 @@ export const getUsers = async (req, res) => {
   }
 };
 
+export const searchUsers = async (req, res) => {
+  try {
+    const { name } = req.body;
+    console.log(name)
+    const users = await User.find({ name: new RegExp(name, 'i') })
+    console.log("users", users);
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+
 export const getUserFriends = async (req, res) => {
   try {
     const { id } = req.params;
@@ -82,20 +94,19 @@ export const addRemoveFriend = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
-    console.log(req.body);
-    const { name, email, phone, location, group } = req.body;
+    console.log("body : ", req.body);
+    const { name, email, phone, location } = req.body;
+    const updateFields = {};
+    if (name) updateFields.name = name;
+    if (email) updateFields.email = email;
+    if (phone) updateFields.phone = phone;
+    if (location) updateFields.location = location;
+
     const user = await User.findOneAndUpdate(
       { _id: req.params.id },
-      {
-        name: name,
-        group: group,
-        email: email,
-        phone: phone,
-        location: location,
-      }
+      updateFields
     );
-    console.log(user);
-    res.status(200).json(user);
+    res.status(200).json({ message: "successfully updated your user settings" });
   } catch (err) {
     res.status(404).json({ message: err.message });
   }

@@ -7,14 +7,20 @@ import { route } from "preact-router";
 
 const onSubmit = async (data) => {
   try {
-    fetch("http://localhost:3001/auth/register", {
+    const response = await fetch("http://localhost:3001/auth/register", {
       method: "POST",
-      body: data,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(data)),
     });
-  } catch (e) {
-    console.log(e);
-  } finally {
-    route("/login");
+    const message = await response.json();
+    console.log(message);
+    if (response.status == 400) setOk(message);
+    else if (!response.ok) console.log("server error");
+    else {
+      route("/login");
+    }
+  } catch (error) {
+    setOk("server error");
   }
 };
 
@@ -34,6 +40,7 @@ function LeftPanel({ change, setChange }) {
     if (isValid) {
       const data = new FormData(formElement);
       data.append("role", selected);
+      console.log(Object.fromEntries(data))
       onSubmit(data);
     }
   };
@@ -78,22 +85,20 @@ function LeftPanel({ change, setChange }) {
                   <button
                     type="button"
                     onClick={() => setSelected("helper")}
-                    className={` ${
-                      selected === "helper"
-                        ? "text-white hover:bg-yellow-400 bg-yellow-500 focus-visible:outline-yellow-600"
-                        : "text-gray-900 bg-transparent"
-                    } rounded-l-xl ring-1 ring-inset ring-gray-300 grow text-black px-6 py-3 sm:py-3.5 text-sm sm:text-lg font-medium  shadow-sm  focus-visible:outline `}
+                    className={` ${selected === "helper"
+                      ? "text-white hover:bg-yellow-400 bg-yellow-500 focus-visible:outline-yellow-600"
+                      : "text-gray-900 bg-transparent"
+                      } rounded-l-xl ring-1 ring-inset ring-gray-300 grow text-black px-6 py-3 sm:py-3.5 text-sm sm:text-lg font-medium  shadow-sm  focus-visible:outline `}
                   >
                     Helper
                   </button>
                   <button
                     type="button"
                     onClick={() => setSelected("refugee")}
-                    className={` ${
-                      selected === "refugee"
-                        ? "text-white hover:bg-yellow-400 bg-yellow-500 focus-visible:outline-yellow-600"
-                        : "text-gray-900 ring-1 ring-inset ring-gray-300 bg-transparent"
-                    } rounded-r-xl px-6 py-3 sm:py-3.5 text-sm grow sm:text-lg font-medium shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
+                    className={` ${selected === "refugee"
+                      ? "text-white hover:bg-yellow-400 bg-yellow-500 focus-visible:outline-yellow-600"
+                      : "text-gray-900 ring-1 ring-inset ring-gray-300 bg-transparent"
+                      } rounded-r-xl px-6 py-3 sm:py-3.5 text-sm grow sm:text-lg font-medium shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
                   >
                     Refugee
                   </button>

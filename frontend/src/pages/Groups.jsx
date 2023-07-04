@@ -6,6 +6,25 @@ import { userContext } from "../userContext";
 import { route } from "preact-router";
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
+import { XCircleIcon } from '@heroicons/react/20/solid'
+
+function Error({ error }) {
+  return (
+    <div className="rounded-md bg-red-50 p-4 w-fit">
+      <div className="flex items-center">
+        <div className="flex-shrink-0">
+          <XCircleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
+        </div>
+        <div className="ml-3 mr-3">
+          <p className="text-sm text-red-700">
+            {error}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 
 function Modal({ active, setActive, role, user }) {
   const ref = useRef();
@@ -82,7 +101,22 @@ function Modal({ active, setActive, role, user }) {
 }
 
 function LeftPanel({ groups, setActiveGroup, activeGroup, panelPosY }) {
-  const { user } = useContext(userContext);
+  const [complete, setComplete] = useState(false);
+  const groupRef = useRef()
+
+  useEffect(() => {
+    const groups = groupRef.current.querySelectorAll('.group-container');
+
+    gsap.from(groups, {
+      opacity: 0,
+      delay: 0.5,
+      duration: 1,
+      stagger: 0.1, // Adjust the stagger delay as desired
+      ease: 'power2.out',
+    });
+  }, [groups]);
+
+
 
   console.log(panelPosY)
   return (
@@ -90,7 +124,7 @@ function LeftPanel({ groups, setActiveGroup, activeGroup, panelPosY }) {
       <Navbar position="relative" />
       <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-16 mt-12">
         <h1 className="text-3xl sm:text-4xl font-semibold mb-12">Grupuri</h1>
-        <div className="grid grid-cols-6 mb-8">
+        <div ref={groupRef} className={` grid grid-cols-6 mb-8`}>
           {groups?.map((group, index) => {
             return (
               <Container
@@ -112,6 +146,9 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
   const [users, setUsers] = useState([]);
   const [active, setActive] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const ref = useRef()
 
   //1 ii jos, 0 ii sus
 
@@ -156,10 +193,10 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
   const { user } = useContext(userContext);
 
   const getUsers = async () => {
-    if (!users) console.log("abc")
-    const ids = group.members
+    const ids = group.members.map((member) => member.user)
+    console.log(ids)
     try {
-      const response = await fetch(`http://192.168.0.109:3001/users/`, {
+      const response = await fetch(`http://localhost:3001/users/`, {
         method: "POST",
         headers: {
           "Content-Type": "Application/json",
@@ -168,6 +205,7 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
         body: JSON.stringify(ids),
       });
       const res = await response.json()
+      console.log(res)
       setUsers(res)
     } catch (e) {
       console.log(e)
@@ -175,6 +213,7 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
   };
 
   const handleTextareaChange = (e) => {
+    setError()
     const value = e.target.value;
 
     setFormData((prevFormData) => ({
@@ -184,6 +223,7 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
   };
 
   const handleCheckboxChange = (e, need) => {
+    setError()
     const isChecked = e.target.checked;
 
     setFormData((prevFormData) => {
@@ -206,17 +246,51 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log(formData)
     if (formData.isFormValid) {
-      console.log(formData)
+      try {
+        const response = await fetch(`http://localhost:3001/groups/${group._id}/helped`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "Application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ userId: user._id, groupId: group._id, needs: formData.resurse, description: formData.descriere }),
+        });
+        const res = await response.json()
+        console.log(res)
+        if (res.error) setError(res.error)
+      } catch (e) {
+        console.log(e)
+      }
+
     }
-    else console.log("gresit")
+    else setError("nu ati completat tot formul")
   }
 
   useEffect(() => {
+    setLoading(false)
+    setError()
+    // setLoading(true)
+    const element = ref.current
     getUsers()
+    // .then(() => {
+    //   gsap.from(
+    //     element,
+    //     {
+    //       onStart: () => {
+    //         setLoading(false)
+    //       },
+    //       opacity: 0,
+    //       duration: 1,
+    //       ease: 'power4.inOut',
+    //     }
+    //   );
+    // })
+
+
     //reset checkboxes on state change
     var clist = document.getElementsByTagName("input");
     for (var i = 0; i < clist.length; ++i) { clist[i].checked = false; }
@@ -235,7 +309,7 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
   }, [activeGroup]);
 
   return (
-    <div className={`rounded-tl-[8rem] h-full overflow-y-auto`}>
+    <div ref={ref} className={`{loading ? "hidden" : ""} rounded-tl-[8rem] h-full overflow-y-auto`}>
       <div id="draggable-panel" className={`translate-y-[calc(100dvh-2rem-env(safe-area-inset-bottom))] lg:translate-y-0 bg-white w-full z-10 fixed top-0 bottom-0 lg:relative`}>
         <svg
           className="absolute inset-0 -z-10 h-full w-full stroke-gray-200 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]"
@@ -280,19 +354,13 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
                   <thead>
                     <tr>
                       <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
-                        Name
+                        Nume
                       </th>
                       <th
                         scope="col"
                         className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
                       >
-                        Title
-                      </th>
-                      <th
-                        scope="col"
-                        className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell"
-                      >
-                        Email
+                        Provenienta
                       </th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                         Role
@@ -305,15 +373,12 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
                         <td className="w-full max-w-0 py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:w-auto sm:max-w-none sm:pl-0">
                           {person.name}
                           <dl className="font-normal lg:hidden">
-                            <dt className="sr-only">Title</dt>
-                            <dd className="mt-1 truncate text-gray-700">{person.title}</dd>
-                            <dt className="sr-only sm:hidden">Email</dt>
-                            <dd className="mt-1 truncate text-gray-500 sm:hidden">{person.email}</dd>
+                            <dt className="sr-only">Provenienta</dt>
+                            <dd className="mt-1 truncate text-gray-700">{person.location}</dd>
                           </dl>
                         </td>
-                        <td className="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">{person.title}</td>
-                        <td className="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">{person.email}</td>
-                        <td className="px-3 py-4 text-sm text-gray-500">{person.role}</td>
+                        <td className="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">{person.location}</td>
+                        <td className="px-3 py-4 text-sm text-gray-500">{person._id == group.ownerId ? "owner" : "member"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -325,7 +390,7 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
                 <fieldset>
                   <legend className="text-base font-semibold leading-6 text-gray-900">Pot ajuta cu :</legend>
                   <div className="max-w-sm mt-4 divide-y divide-gray-200 border-b border-t border-gray-200">
-                    {group?.needs.map((need, needId) => (
+                    {!loading && group?.needs.map((need, needId) => (
                       <div key={needId} className="relative flex items-start py-4">
                         <div className="min-w-0 flex-1 text-sm leading-6">
                           <label htmlFor={`person-${need.id}`} className="select-none font-medium text-gray-900">
@@ -356,23 +421,24 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
                     rows={4}
                     name="comment"
                     id="comment"
-                    className="block w-full max-w-sm rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-main-blue sm:text-sm sm:leading-6"
+                    className="mb-6 block w-full max-w-sm rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-main-blue sm:text-sm sm:leading-6"
                     defaultValue={''}
                     onChange={(e) => handleTextareaChange(e)}
                   />
                 </div>
               </div>
+              {error && <Error error={error} />}
               {user?.role == "helper" ? (
                 <button
                   type="submit"
-                  className="rounded-xl mt-12 w-fit bg-red-500 px-4 py-2 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-red-400 "
+                  className="rounded-xl mt-6 w-fit bg-red-500 px-4 py-2 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-red-400 "
                 >
                   Trimite solicitare
                 </button>
               ) : (
                 <button
                   type="submit"
-                  className="rounded-xl mt-12 w-fit bg-yellow-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-yellow-400"
+                  className="rounded-xl mt-6 w-fit bg-yellow-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-yellow-400"
                 >
                   Join this group
                 </button>
@@ -397,7 +463,7 @@ function Container({ group, id, activeGroup, setActiveGroup }) {
 
   return (
     <div
-      className={`bg-white col-span-6 mr-4 my-4 sm:col-span-3 flex flex-col space-y-8 p-6 ${activeGroup === id ? "ring ring-blue-200" : ""
+      className={`bg-white group-container col-span-6 mr-4 my-4 sm:col-span-3 flex flex-col space-y-8 p-6 ${activeGroup === id ? "ring ring-blue-200" : ""
         } rounded-3xl shadow-lg shadow-gray-100 hover:cursor-pointer`}
       onClick={() => setActiveGroup(id)}
     >
@@ -452,7 +518,7 @@ function Container({ group, id, activeGroup, setActiveGroup }) {
           <span className="font-semibold"> Nevoi : </span>
           {needs.map((item) => {
             return (
-              <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-sm font-medium text-blue-700 mr-2">
+              <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-sm font-medium text-blue-700 mr-2 my-1">
                 {item}
               </span>
             );
@@ -487,12 +553,14 @@ export default function Groups() {
   const [error, setError] = useState(false);
   const [activeGroup, setActiveGroup] = useState(0);
   const [panelPosY, setPanelPosY] = useState(1)
+  const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState({
     resurse: [],
     descriere: "",
     isFormValid: true,
   })
 
+  const ref = useRef()
   gsap.registerPlugin(Draggable);
 
   const getGroups = async () => {
@@ -507,23 +575,30 @@ export default function Groups() {
 
   useEffect(() => {
     getGroups();
+    gsap.fromTo(ref.current, { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power4.inOut" })
+    setLoading(false)
+    return () => {
+      gsap.killTweensOf(ref.current);
+    };
   }, []);
 
   return !error ? (
-    <SplitScreen>
-      <LeftPanel panelPosY={panelPosY} groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} />
-      {
-        groups && (
-          <RightPanel
-            activeGroup={activeGroup}
-            group={groups[activeGroup]}
-            formData={formData}
-            setFormData={setFormData}
-            panelPosY={panelPosY}
-            setPanelPosY={setPanelPosY}
-          />)
-      }
-    </SplitScreen>
+    <div className={`${loading ? "hidden" : ""}`} ref={ref}>
+      <SplitScreen>
+        <LeftPanel panelPosY={panelPosY} groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} />
+        {
+          groups && (
+            <RightPanel
+              activeGroup={activeGroup}
+              group={groups[activeGroup]}
+              formData={formData}
+              setFormData={setFormData}
+              panelPosY={panelPosY}
+              setPanelPosY={setPanelPosY}
+            />)
+        }
+      </SplitScreen>
+    </div>
   ) : (
     "An error has occured"
   );

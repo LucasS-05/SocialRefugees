@@ -1,6 +1,7 @@
 /* width */
 ::-webkit-scrollbar {
   width: 4px;
+  height: 4px;
 }
 
 
@@ -13,3 +14,32 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* .fade-appear { */
+/*   opacity: 0; */
+/* } */
+/**/
+/* .fade-appear-active { */
+/*   opacity: 1; */
+/*   transition: opacity 400ms; */
+/*   transition-delay: 600ms; */
+/* } */
+
+.page-enter {
+  opacity: 0;
+}
+
+.page-enter-active {
+  opacity: 1;
+  transition: opacity 300ms ease-in;
+}
+
+.page-exit {
+  opacity: 1;
+}
+
+.page-exit-active {
+  opacity: 0;
+  transition: opacity 300ms ease-in;
+}
+

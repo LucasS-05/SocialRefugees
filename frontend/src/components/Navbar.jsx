@@ -19,7 +19,7 @@ export default function Navbar({ position }) {
         } z-10 w-full px-2 sm:px-4 lg:px-8 xl:px-16`}
     >
       <nav
-        className="mx-auto flex items-center flex-row-reverse lg:flex-row justify-between py-6 px-4 sm:px-6 lg:px-8"
+        className="mx-auto max-w-7xl flex items-center flex-row-reverse lg:flex-row justify-between py-6 px-4 sm:px-6 lg:px-8"
         aria-label="Global"
       >
         <div className="flex lg:hidden">

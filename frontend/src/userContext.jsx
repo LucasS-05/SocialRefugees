@@ -28,7 +28,7 @@ const Context = ({ children }) => {
     setLocalStorage("id", user._id);
   }, [user]);
 
-  return <userContext.Provider value={{user, setUser}}>{children}</userContext.Provider>;
+  return <userContext.Provider value={{ user, setUser }}>{children}</userContext.Provider>;
 };
 
 export default Context;

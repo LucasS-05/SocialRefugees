@@ -33,6 +33,7 @@ const __dirname = path.dirname(__filename);
 /* Express config */
 
 const app = express();
+
 app.use(express.json());
 app.use(morgan("common"));
 app.use(helmet());
@@ -40,7 +41,6 @@ app.use(cors());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(bodyParser.json({ limit: "32mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "32mb", extended: true }));
-app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 /* File storage */
 
@@ -49,22 +49,22 @@ const storage = multer.diskStorage({
     cb(null, "./assets");
   },
   filename: function(req, file, cb) {
-    cb(null, file.originalname);
-  },
+    cb(null, Date.now() + '-' + file.originalname); // Generate a unique filename for the uploaded file
+  }
 });
 
 const upload = multer({ storage });
 
 /* Routes with files */
-app.post("/auth/register", upload.single("picture"), register);
-app.post("/groups", verifyToken, upload.single("picture"), createGroup);
-app.post("/uploads", upload.single("picture"), verifyToken, uploadPicture);
-app.put("/users/:id", verifyToken, updateUser);
+//app.post("/groups", verifyToken, upload.single("user-photo"), createGroup);
+app.use("/assets", express.static(path.join(__dirname, "./assets")));
+app.put("/images/:id", upload.single("user-photo"), verifyToken, uploadPicture);
 
 /* Routes */
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/groups", groupRoutes);
+
 
 /* Mongoose Setup */
 

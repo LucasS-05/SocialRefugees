@@ -1,7 +1,19 @@
 import mongoose from "mongoose";
 
-const groupSchema = mongoose.Schema(
+const groupSchema = new mongoose.Schema(
   {
+    helpedBy: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        needs: [
+          { type: String }
+        ],
+        description: String,
+      },
+    ],
     administeredBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -13,8 +25,16 @@ const groupSchema = mongoose.Schema(
     },
     members: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        _id: false,
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        role: {
+          type: String,
+          enum: ["user", "admin"],
+          default: "user",
+        },
       },
     ],
     needs: [

@@ -7,6 +7,7 @@ import User from "../models/User.js";
 export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    console.log(req.body)
 
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
@@ -34,6 +35,7 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     let user = await User.findOne({ email: email });
+    let isAdmin = user.role == "admin" ? true : false;
     if (!user) return res.status(400).json({ user: "User does not exist" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -41,7 +43,7 @@ export const login = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ password: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: user._id, admin: isAdmin }, process.env.JWT_SECRET);
 
     user = user.toObject();
     delete user.password
