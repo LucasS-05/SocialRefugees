@@ -25,7 +25,6 @@ const Context = ({ children }) => {
 
   useEffect(() => {
     setLocalStorage("user", user);
-    setLocalStorage("id", user._id);
   }, [user]);
 
   return <userContext.Provider value={{ user, setUser }}>{children}</userContext.Provider>;

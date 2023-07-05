@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
+import { generateShortId } from "../generateId.js";
 
 const groupSchema = new mongoose.Schema(
   {
+    shortId: {
+      type: String,
+      unique: true,
+    },
     helpedBy: [
       {
         userId: {
@@ -35,6 +40,11 @@ const groupSchema = new mongoose.Schema(
           enum: ["user", "admin"],
           default: "user",
         },
+        status: {
+          type: String,
+          enum: ["none", "pending", "rejected", "accepted"],
+          default: "none",
+        },
       },
     ],
     needs: [
@@ -47,6 +57,15 @@ const groupSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+groupSchema.pre('save', function(next) {
+  if (!this.shortId) {
+    this.shortId = generateShortId();
+  }
+  next();
+});
+
 const Group = mongoose.model("Group", groupSchema);
 
 export default Group;
+

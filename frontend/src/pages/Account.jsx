@@ -7,16 +7,18 @@ import { route } from "preact-router";
 
 import {
   BellIcon,
+  ChartBarIcon,
   UserCircleIcon,
   UsersIcon,
 } from '@heroicons/react/24/outline'
+import Notification from "../components/Notification";
 
 let navigation = [
-  { name: 'General', href: '#', icon: UserCircleIcon, current: true },
+  { name: 'General', href: '/account', icon: UserCircleIcon, current: true },
   { name: 'Notifications', href: '#', icon: BellIcon, current: false },
   { name: 'Groups', href: '/creategroup', icon: UsersIcon, current: false },
+  { name: 'Dashboard', href: "/dashboard", icon: ChartBarIcon, current: false }
 ]
-
 
 
 function classNames(...classes) {
@@ -30,36 +32,6 @@ const formatter = new Intl.DateTimeFormat("en-RO", {
   hour: "numeric",
 });
 
-import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/20/solid'
-
-function Success({ setSuccess }) {
-  return (
-    <div className="rounded-md bg-green-50 p-4">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <CheckCircleIcon className="h-5 w-5 text-green-400" aria-hidden="true" />
-        </div>
-        <div className="ml-3">
-          <p className="text-sm font-medium text-green-800">Successfully uploaded</p>
-        </div>
-        <div className="ml-auto pl-3">
-          <div className="-mx-1.5 -my-1.5">
-            <button
-              type="button"
-              className="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
-              onClick={() => setSuccess(false)}
-            >
-              <span className="sr-only">Dismiss</span>
-              <XMarkIcon className="h-5 w-5" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-
 export default function Account() {
   const [file, setFile] = useState()
   const [submitData, setData] = useState({
@@ -70,15 +42,17 @@ export default function Account() {
     location: ""
   })
 
-
-  const [success, setSuccess] = useState(false)
+  const [success, setSuccess] = useState({ status: false, message: "" })
   const { user, setUser } = useContext(userContext)
 
   navigation = navigation.filter(item => {
-    if (item.name === 'Groups' && user.role === 'helper') {
-      return false; // Exclude 'Friends' object for admin user
+    if (item.name === 'Groups' && user.role !== 'refugee') {
+      console.log(user.role)
+      return false;
     }
-    return true; // Include all other objects
+    if (item.name === 'Dashboard' && user.role !== 'admin')
+      return false;
+    return true
   });
 
 
@@ -100,7 +74,6 @@ export default function Account() {
       }
 
       const data = await response.json();
-
       const formattedUser = {};
       if (submitData.name) formattedUser.name = submitData.name;
       if (submitData.email) formattedUser.email = submitData.email;
@@ -111,8 +84,7 @@ export default function Account() {
         ...prevUser,
         ...formattedUser
       }))
-      console.log(data)
-
+      setSuccess({ status: true, message: data.message })
       if (!file) return;
 
       let formData = new FormData()
@@ -141,6 +113,30 @@ export default function Account() {
 
   return (
     <div>
+      <svg
+        className="absolute inset-0 -z-10 h-full w-full stroke-gray-200 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]"
+        aria-hidden="true"
+      >
+        <defs>
+          <pattern
+            id="83fd4e5a-9d52-42fc-97b6-718e5d7ee527"
+            width={200}
+            height={200}
+            x="50%"
+            y={-1}
+            patternUnits="userSpaceOnUse"
+          >
+            <path d="M100 200V.5M.5 .5H200" fill="none" />
+          </pattern>
+        </defs>
+        <svg x="50%" y={-1} className="overflow-visible fill-gray-50">
+          <path
+            d="M-100.5 0h201v201h-201Z M699.5 0h201v201h-201Z M499.5 400h201v201h-201Z M-300.5 600h201v201h-201Z"
+            strokeWidth={0}
+          />
+        </svg>
+        <rect width="100%" height="100%" strokeWidth={0} fill="url(#83fd4e5a-9d52-42fc-97b6-718e5d7ee527)" />
+      </svg>
       <Navbar />
       <div class="mx-auto max-w-7xl pt-16 lg:flex lg:gap-x-16 lg:px-8">
         <aside class="flex overflow-x-auto border-b border-gray-900/5 py-4 lg:block lg:w-64 lg:flex-none lg:border-0 lg:py-20">
@@ -172,7 +168,7 @@ export default function Account() {
           </nav>
         </aside>
 
-        <div className="flex-1 xl:overflow-y-auto">
+        <div className="bg-gray-50 mt-8 sm:mb-8 rounded-3xl flex-1 xl:overflow-y-auto">
           <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">Account</h1>
 
@@ -314,7 +310,7 @@ export default function Account() {
               </div>
               <div>
                 <div className="py-4">
-                  {success && <Success setSuccess={setSuccess} />}
+                  {success.status && <Notification setSuccess={setSuccess} success={success} />}
                 </div>
                 <div className="flex justify-end gap-x-3 pt-8">
                   <button

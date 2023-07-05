@@ -142,7 +142,7 @@ function LeftPanel({ groups, setActiveGroup, activeGroup, panelPosY }) {
 }
 
 function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
-  setPanelPosY }) {
+  setPanelPosY, user }) {
   const [users, setUsers] = useState([]);
   const [active, setActive] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -190,7 +190,6 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
     });
 
   }
-  const { user } = useContext(userContext);
 
   const getUsers = async () => {
     const ids = group.members.map((member) => member.user)
@@ -267,6 +266,7 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
       }
 
     }
+    else if (user.role == "refugee") console.log("join gr")
     else setError("nu ati completat tot formul")
   }
 
@@ -341,7 +341,7 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
         <div className="overflow-y-auto h-full">
           <div className="mx-auto pt-16 lg:pt-32 pb-16 max-w-7xl px-4 sm:px-8 lg:px-16">
             <h1 className="text-3xl sm:text-4xl font-semibold mb-12">
-              Group #{activeGroup}
+              Group #{group.shortId}
             </h1>
             <div>
               <div className="sm:flex sm:items-center">
@@ -386,45 +386,47 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
               </div>
             </div>
             <form onSubmit={handleSubmit}>
-              <div className="mt-8">
-                <fieldset>
-                  <legend className="text-base font-semibold leading-6 text-gray-900">Pot ajuta cu :</legend>
-                  <div className="max-w-sm mt-4 divide-y divide-gray-200 border-b border-t border-gray-200">
-                    {!loading && group?.needs.map((need, needId) => (
-                      <div key={needId} className="relative flex items-start py-4">
-                        <div className="min-w-0 flex-1 text-sm leading-6">
-                          <label htmlFor={`person-${need.id}`} className="select-none font-medium text-gray-900">
-                            {need}
-                          </label>
+              <div className={`${user.role == "refugee" ? "hidden" : ""}`}>
+                <div className="mt-8">
+                  <fieldset>
+                    <legend className="text-base font-semibold leading-6 text-gray-900">Pot ajuta cu :</legend>
+                    <div className="max-w-sm mt-4 divide-y divide-gray-200 border-b border-t border-gray-200">
+                      {!loading && group?.needs.map((need, needId) => (
+                        <div key={needId} className="relative flex items-start py-4">
+                          <div className="min-w-0 flex-1 text-sm leading-6">
+                            <label htmlFor={`person-${need.id}`} className="select-none font-medium text-gray-900">
+                              {need}
+                            </label>
+                          </div>
+                          <div className="ml-3 flex h-6 items-center">
+                            <input
+                              id={`person-${need.id}`}
+                              name={`person-${need.id}`}
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300 text-main-blue focus:outline-none focus:ring-0 focus:ring-offset-0"
+                              onChange={(e) => handleCheckboxChange(e, need)}
+                            />
+                          </div>
                         </div>
-                        <div className="ml-3 flex h-6 items-center">
-                          <input
-                            id={`person-${need.id}`}
-                            name={`person-${need.id}`}
-                            type="checkbox"
-                            className="h-4 w-4 rounded border-gray-300 text-main-blue focus:outline-none focus:ring-0 focus:ring-offset-0"
-                            onChange={(e) => handleCheckboxChange(e, need)}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </fieldset>
+                </div>
+                <div className="mt-8">
+                  <label htmlFor="comment" className="block font-medium text-base font-semibold leading-6 text-gray-900">
+                    <legend className="">Descrie in detaliu modul prin care ne poti ajuta : </legend>
+                  </label>
+                  <p className="mb-4">(cantitatea de mancare/apa, spatiul de cazare (camere, dimensiuni))</p>
+                  <div className="mt-2">
+                    <textarea
+                      rows={4}
+                      name="comment"
+                      id="comment"
+                      className="mb-6 block w-full max-w-sm rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-main-blue sm:text-sm sm:leading-6"
+                      defaultValue={''}
+                      onChange={(e) => handleTextareaChange(e)}
+                    />
                   </div>
-                </fieldset>
-              </div>
-              <div className="mt-8">
-                <label htmlFor="comment" className="block font-medium text-base font-semibold leading-6 text-gray-900">
-                  <legend className="">Descrie in detaliu modul prin care ne poti ajuta : </legend>
-                </label>
-                <p className="mb-4">(cantitatea de mancare/apa, spatiul de cazare (camere, dimensiuni))</p>
-                <div className="mt-2">
-                  <textarea
-                    rows={4}
-                    name="comment"
-                    id="comment"
-                    className="mb-6 block w-full max-w-sm rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-main-blue sm:text-sm sm:leading-6"
-                    defaultValue={''}
-                    onChange={(e) => handleTextareaChange(e)}
-                  />
                 </div>
               </div>
               {error && <Error error={error} />}
@@ -438,19 +440,13 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
               ) : (
                 <button
                   type="submit"
-                  className="rounded-xl mt-6 w-fit bg-yellow-500 px-6 py-3 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-yellow-400"
+                  className="rounded-xl mt-6 w-fit bg-yellow-500 px-6 py-2 text-sm sm:text-base font-medium text-white shadow-sm hover:bg-yellow-400"
                 >
                   Join this group
                 </button>
               )}
             </form>
           </div>
-          {/* <Modal */}
-          {/*   active={active} */}
-          {/*   setActive={setActive} */}
-          {/*   role={user?.role} */}
-          {/*   user={user} */}
-          {/* /> */}
         </div>
       </div>
     </div>
@@ -470,7 +466,7 @@ function Container({ group, id, activeGroup, setActiveGroup }) {
       <div className="flex justify-between items-end">
         <div className="flex flex-col">
           <p className="">Group ID </p>
-          <p className="font-semibold text-main-purple">002</p>
+          <p className="font-semibold text-main-purple">{group.shortId}</p>
         </div>
         <p className="font-semibold">{createdAt.toLocaleString('en-ro').slice(0, 10)}</p>
       </div>
@@ -525,30 +521,15 @@ function Container({ group, id, activeGroup, setActiveGroup }) {
           })}
         </div>
       </div>
-      {user?.role == "helper" ? (
-        <button
-          type="button"
-          onClick={() => setActive(true)}
-          className={`${window.innerWidth > 124 ? "hidden" : "block"
-            } rounded-xl w-full bg-red-500 px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-red-400`}
-        >
-          Pot ajuta
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setActive(true)}
-          className={`${window.innerWidth > 124 ? "hidden" : "block"
-            } rounded-xl w-full bg-red-500 px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-red-400`}
-        >
-          Join this group
-        </button>
-      )}
     </div>
   );
 }
 
 export default function Groups() {
+
+  const { user } = useContext(userContext);
+  user.role == "admin" && route("/dashboard");
+
   const [groups, setGroups] = useState();
   const [error, setError] = useState(false);
   const [activeGroup, setActiveGroup] = useState(0);
@@ -595,6 +576,7 @@ export default function Groups() {
               setFormData={setFormData}
               panelPosY={panelPosY}
               setPanelPosY={setPanelPosY}
+              user={user}
             />)
         }
       </SplitScreen>

@@ -1,10 +1,8 @@
 
-import { useContext, useEffect, useReducer, useState } from "preact/hooks";
+import { useContext, useEffect, useState } from "preact/hooks";
 import Navbar from "../components/Navbar";
 import { userContext } from "../userContext";
 import Input from "../components/Input";
-import def from "../assets/default.png";
-import { route } from "preact-router";
 
 import {
   BellIcon,
@@ -12,6 +10,7 @@ import {
   UsersIcon,
 } from '@heroicons/react/24/outline'
 import { PlusIcon } from '@heroicons/react/20/solid'
+import Notification from "../components/Notification";
 
 let navigation = [
   { name: 'General', href: '/account', icon: UserCircleIcon, current: false },
@@ -32,39 +31,12 @@ const formatter = new Intl.DateTimeFormat("en-RO", {
   hour: "numeric",
 });
 
-import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/20/solid'
-import { Power0 } from "gsap/gsap-core";
-
-function Success({ setSuccess }) {
-  return (
-    <div className="rounded-md bg-green-50 p-4">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <CheckCircleIcon className="h-5 w-5 text-green-400" aria-hidden="true" />
-        </div>
-        <div className="ml-3">
-          <p className="text-sm font-medium text-green-800">Successfully uploaded</p>
-        </div>
-        <div className="ml-auto pl-3">
-          <div className="-mx-1.5 -my-1.5">
-            <button
-              type="button"
-              className="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
-              onClick={() => setSuccess(false)}
-            >
-              <span className="sr-only">Dismiss</span>
-              <XMarkIcon className="h-5 w-5" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-
 export default function Account() {
+  const { user, setUser } = useContext(userContext)
+
+  if (user.role == "helper") return "Access Denied"
   const [searchUsers, setUsers] = useState()
+  const [success, setSuccess] = useState({ status: false, message: "" })
 
   const needs = [
     { id: 1, name: 'mancare' },
@@ -73,8 +45,6 @@ export default function Account() {
     { id: 4, name: 'apa' },
   ]
 
-  const [success, setSuccess] = useState(false)
-  const { user, setUser } = useContext(userContext)
 
   const [userGroup, setUserGroup] = useState()
   const [userGroupMembers, setUserGroupMembers] = useState([])
@@ -183,6 +153,28 @@ export default function Account() {
     });
   };
 
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/groups/delete/`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "Application/json",
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ groupId: userGroup._id, userId: user._id })
+      });
+
+      const data = await response.json()
+      if (!response.ok) {
+        setSuccess({ status: true, error: true, message: data.message })
+        throw new Error(response);
+      }
+      setSuccess({ status: true, error: false, message: data.message })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const handleCreate = async (e) => {
     e.preventDefault()
     //if group empty, create group
@@ -200,7 +192,7 @@ export default function Account() {
         console.log(userGroup)
         //post to groups
         try {
-          const response = await fetch(`http://localhost:3001/${userGroup}`, {
+          const response = await fetch(`http://localhost:3001/groups/`, {
             method: 'POST',
             headers: {
               "Content-Type": "Application/json",
@@ -209,9 +201,13 @@ export default function Account() {
             body: JSON.stringify(userGroup)
           });
 
+          const data = await response.json()
           if (!response.ok) {
+            setSuccess({ status: true, error: true, message: data.message })
             throw new Error(response);
           }
+
+          setSuccess({ status: true, error: false, message: data.message })
         } catch (error) {
           console.log(error)
         }
@@ -232,6 +228,7 @@ export default function Account() {
           if (!response.ok) {
             throw new Error(response);
           }
+          setSuccess({ status: true, message: data.message })
         } catch (error) {
           console.log(error)
         }
@@ -242,6 +239,30 @@ export default function Account() {
 
   return (
     <div>
+      <svg
+        className="absolute inset-0 -z-10 h-full w-full stroke-gray-200 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]"
+        aria-hidden="true"
+      >
+        <defs>
+          <pattern
+            id="83fd4e5a-9d52-42fc-97b6-718e5d7ee527"
+            width={200}
+            height={200}
+            x="50%"
+            y={-1}
+            patternUnits="userSpaceOnUse"
+          >
+            <path d="M100 200V.5M.5 .5H200" fill="none" />
+          </pattern>
+        </defs>
+        <svg x="50%" y={-1} className="overflow-visible fill-gray-50">
+          <path
+            d="M-100.5 0h201v201h-201Z M699.5 0h201v201h-201Z M499.5 400h201v201h-201Z M-300.5 600h201v201h-201Z"
+            strokeWidth={0}
+          />
+        </svg>
+        <rect width="100%" height="100%" strokeWidth={0} fill="url(#83fd4e5a-9d52-42fc-97b6-718e5d7ee527)" />
+      </svg>
       <Navbar />
       <div class="mx-auto max-w-7xl pt-16 lg:flex lg:gap-x-16 lg:px-8">
         <aside class="flex overflow-x-auto border-b border-gray-900/5 py-4 lg:block lg:w-64 lg:flex-none lg:border-0 lg:py-20">
@@ -272,22 +293,23 @@ export default function Account() {
             </ul>
           </nav>
         </aside>
-        <div className="flex-1 xl:overflow-y-auto">
+        <div className="bg-gray-50 rounded-3xl mt-8 sm:mb-8 flex-1 xl:overflow-y-auto">
           <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">Your Group</h1>
             <form onSubmit={(e) => handleCreate(e)} className="divide-y-slate-200 mt-6 space-y-8">
               <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
                 <div className="sm:col-span-6">
-                  <h2 className="text-xl font-bold text-slate-900">Create group</h2>
-                  <p className="mt-1 text-sm font-medium text-slate-500">
-                    If you dont have a group, you can create one.
-                  </p>
+                  <h2 className="text-xl font-bold text-slate-900">{groupExists ? "Update Group" : "Create group"}</h2>
+                  {
+                    !groupExists &&
+                    <p className="mt-1 text-sm font-medium text-slate-500">
+                      If you dont have a group, you can create one.
+                    </p>
+                  }
                 </div>
                 {
                   userGroup &&
                   <div className="sm:col-span-6">
-
-
                     <div className="sm:col-span-6">
                       <Input
                         required={false}
@@ -327,7 +349,8 @@ export default function Account() {
                                     ...prevState.members,
                                     {
                                       user: person._id,
-                                      role: "user"
+                                      role: "user",
+                                      status: "pending"
                                     }
                                   ]
                                 }));
@@ -343,8 +366,8 @@ export default function Account() {
                   </div>
                   <div className="">
                     <div className="mt-8 flow-root">
-                      <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                        <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                      <div className="overflow-x-auto">
+                        <div className="bg-white rounded-xl ring-1 ring-inset ring-gray-300 inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                           <table className="min-w-full divide-y divide-gray-300">
                             <thead>
                               <tr>
@@ -357,6 +380,11 @@ export default function Account() {
                                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                                   Role
                                 </th>
+                                {
+                                  groupExists &&
+                                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    Status
+                                  </th>}
                                 <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
                                   <span className="sr-only">Remove</span>
                                 </th>
@@ -370,6 +398,9 @@ export default function Account() {
                                   </td>
                                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{person?.location}</td>
                                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{userGroup?.members.map((member) => member.user == person._id ? member.role : "")}</td>
+                                  {groupExists && <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{userGroup?.members.map((member) => (member.user == person._id) ? member.status ? <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                    {member.status}
+                                  </span> : null : null)}</td>}
                                   <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                                     <button onClick={() => {
                                       setUserGroup((prevState) => ({
@@ -390,9 +421,9 @@ export default function Account() {
                       </div>
                     </div>
                     <div className="mt-8">
-                      <fieldset className="max-w-sm">
-                        <legend className="text-base font-semibold leading-6 text-gray-900">Needs</legend>
-                        <div className="mt-4 divide-y divide-gray-200 border-b border-t border-gray-200">
+                      <fieldset className="bg-white py-2 px-4 sm:px-6 lg:px-8 rounded-xl ring-1 ring-inset ring-gray-300">
+                        <p className="text-base font-semibold leading-6 text-gray-900 my-4">Needs</p>
+                        <div className="divide-y divide-gray-200 border-t border-gray-200">
                           {needs.map((need, needId) => (
                             <div key={needId} className="relative flex items-start py-4">
                               <div className="min-w-0 flex-1 text-sm leading-6">
@@ -420,18 +451,22 @@ export default function Account() {
               }
               <div>
                 {
-                  success &&
+                  success.status &&
                   <div className="py-4">
-                    <Success setSuccess={setSuccess} />
+                    <Notification setSuccess={setSuccess} success={success} />
                   </div>
                 }
                 <div className={`flex ${userGroup ? "justify-end pt-8" : "justify-start pt-0"} gap-x-3 `}>
-                  <button
-                    type="button"
-                    className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
-                  >
-                    Cancel
-                  </button>
+                  {
+                    groupExists &&
+                    <button
+                      type="button"
+                      className="rounded-md bg-red-600 text-white px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-500"
+                      onClick={handleDelete}
+                    >
+                      Delete
+                    </button>
+                  }
                   <button
                     type="submit"
                     className="inline-flex justify-center rounded-md bg-yellow-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-yellow-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"

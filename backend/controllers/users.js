@@ -17,7 +17,7 @@ export const getUsers = async (req, res) => {
     const ids = req.body;
     console.log(ids)
     const users = await Promise.all(
-      ids.map((id) => User.findById(id))
+      ids.map((id) => User.findById(id).select('-password -owns'))
     );
     console.log("users", users);
     res.status(200).json(users);

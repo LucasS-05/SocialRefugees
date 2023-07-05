@@ -26,13 +26,25 @@ const UserSchema = new mongoose.Schema(
     },
     picturePath: {
       type: String,
-      //Default profile pic in assets
       default: "",
     },
     group: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Group",
     },
+    owns: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Group",
+    },
+    notifications: [
+      {
+        message: {
+          type: String,
+          required: true,
+        },
+
+      },
+    ],
     role: {
       type: String,
       enum: ["guest", "refugee", "helper", "admin"],
