@@ -38,11 +38,27 @@ const UserSchema = new mongoose.Schema(
     },
     notifications: [
       {
+        notificationType: {
+          type: String,
+          enum: ["group_invite", "group_request", "other"],
+          required: true,
+        },
+        status: {
+          type: String,
+          enum: ['unread', 'read'],
+          default: 'unread',
+        },
         message: {
           type: String,
           required: true,
         },
-
+        groupId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Group",
+        },
+        ownerName: {
+          type: String,
+        },
       },
     ],
     role: {

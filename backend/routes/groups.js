@@ -1,5 +1,5 @@
 import express from "express";
-import { getGroups, getGroupAdmin, createGroup, addGroupHelper, updateGroup, setGroupAdmin, getAdministeredGroups, getUnadministeredGroups, deleteGroup } from "../controllers/groups.js";
+import { getGroups, getGroupAdmin, createGroup, addGroupHelper, updateGroup, setGroupAdmin, getAdministeredGroups, getUnadministeredGroups, deleteGroup, updateMemberStatus, joinGroup } from "../controllers/groups.js";
 
 import { verifyToken } from "../middlewares/auth.js";
 import { verifyAdmin } from "../middlewares/admin.js";
@@ -11,15 +11,17 @@ const router = express.Router();
 //WARN : CHANGE FUTURE PATH ON CREATE GROUP
 //no, di ce sa-l schimb? amu nu mai tin minte
 
-router.get("/", getGroups);
-router.get("/unadministered", getUnadministeredGroups);
-router.post("/administered", getAdministeredGroups);
-router.post("/", createGroup);
-router.post("/delete", deleteGroup);
-router.post("/:ownerId", getGroupAdmin);
+router.get("/", verifyToken, getGroups);
+router.get("/unadministered", verifyToken, getUnadministeredGroups);
+router.post("/administered", verifyToken, getAdministeredGroups);
+router.post("/", verifyToken, createGroup);
+router.post("/delete", verifyToken, deleteGroup);
+router.post("/:ownerId", verifyToken, getGroupAdmin);
 // router.get("/:userId/groups", verifyToken, getGroups);
 
-router.patch("/:groupId/update", updateGroup);
+router.patch("/:groupId/update", verifyToken, updateGroup);
+router.patch("/:groupId/request-join", verifyToken, joinGroup);
+router.patch("/:groupId/update-member-status", verifyToken, updateMemberStatus);
 
 //o gandesc mai inclo
 //router.get("/bucket", verifyToken, verifyAdmin, getBucket);

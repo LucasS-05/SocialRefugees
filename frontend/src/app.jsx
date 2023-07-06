@@ -8,12 +8,14 @@ import Groups from "./pages/Groups";
 import Multumim from "./pages/Multumim";
 import CreateGroups from "./pages/CreateGroups"
 import Dashboard from "./pages/Dashboard"
+import Notifications from "./pages/Notifications";
 
 export function App() {
   return (
     <Router>
       <Home path="/" />
       <Login path="/login" />
+      <Notifications path="notifications" />
       <Register path="/register" />
       <Account path="/account" />
       <Groups path="/groups" />

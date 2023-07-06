@@ -61,7 +61,7 @@ function LeftPanel() {
   };
 
   return (
-    <div className="h-full relative">
+    <div className="h-full relative overflow-auto">
       <Navbar />
       <div className="flex flex-col px-2 sm:px-4 lg:px-8 xl:px-16 justify-center h-full">
         <div className="max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -138,7 +138,7 @@ function LeftPanel() {
 
 function RightPanel() {
   return (
-    <div className="h-full rounded-tl-[8rem] overflow-hidden">
+    <div className="h-full rounded-tl-[8rem] overflow-hidden hidden lg:block">
       <img
         src={red}
         className="min-w-full h-full object-cover object-left"

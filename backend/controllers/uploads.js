@@ -5,7 +5,7 @@ export const uploadPicture = async (req, res) => {
     const user = await User.findById(req.params.id);
     console.log(req.file)
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Utilizatorul nu a fost gasit' });
     }
     // Save the file path or URL to the user's profile picture field in the database
     user.picturePath = req.file.path; // Assuming you saved the file to the local filesystem

@@ -41,7 +41,7 @@ export default function Navbar({ position }) {
             href={"/"}
             className="text-sm font-semibold leading-6 text-gray-900"
           >
-            Home
+            Acasă
           </a>
           <a
             href={user ? "/groups" : "/login"}
@@ -62,7 +62,7 @@ export default function Navbar({ position }) {
                   aria-expanded="true"
                   aria-haspopup="true"
                 >
-                  Account
+                  Cont
                   <svg
                     class="-mr-1 h-5 w-5 text-gray-400"
                     viewBox="0 0 20 20"
@@ -93,7 +93,7 @@ export default function Navbar({ position }) {
                     tabindex="-1"
                     id="menu-item-0"
                   >
-                    Account settings
+                    Setări
                   </a>
                   <form method="POST" action="#" role="none">
                     <button
@@ -168,12 +168,48 @@ export default function Navbar({ position }) {
                 </a>
               </div>
               <div className="py-6">
-                <a
-                  href="/login"
-                  className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                >
-                  Log in
-                </a>
+                {user ? (
+                  <div class="relative inline-block text-left">
+                    <div className="-my-6 divide-y divide-gray-500/10">
+                      <div class="pt-6" role="none">
+                        <a
+                          href="/account"
+                          class="font-semibold leading-6 text-gray-900"
+                          role="menuitem"
+                          tabindex="-1"
+                          id="menu-item-0"
+                        >
+                          Setări
+                        </a>
+                        <form method="POST" action="#" role="none">
+                          <button
+                            type="button"
+                            onClick={() => (
+                              setUser(null),
+                              localStorage.removeItem("token"),
+                              route("/")
+                            )}
+                            class="font-semibold leading-6 text-gray-900 mt-4"
+                            role="menuitem"
+                            tabindex="-1"
+                            id="menu-item-3"
+                          >
+                            Sign out
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex divide-x py-1.5">
+                    <a
+                      href="/login"
+                      className="text-sm pr-4 font-semibold leading-6 text-gray-900"
+                    >
+                      Logare <span aria-hidden="true"></span>
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>

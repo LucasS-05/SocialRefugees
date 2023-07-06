@@ -14,9 +14,9 @@ import {
 import Notification from "../components/Notification";
 
 let navigation = [
-  { name: 'General', href: '/account', icon: UserCircleIcon, current: true },
-  { name: 'Notifications', href: '#', icon: BellIcon, current: false },
-  { name: 'Groups', href: '/creategroup', icon: UsersIcon, current: false },
+  { name: 'Cont', href: '/account', icon: UserCircleIcon, current: true },
+  { name: 'Notificari', href: '/notifications', icon: BellIcon, current: false },
+  { name: 'Grupuri', href: '/creategroup', icon: UsersIcon, current: false },
   { name: 'Dashboard', href: "/dashboard", icon: ChartBarIcon, current: false }
 ]
 
@@ -25,11 +25,12 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-const formatter = new Intl.DateTimeFormat("en-RO", {
+const formatter = new Intl.DateTimeFormat("ro-RO", {
   year: "numeric",
   month: "long",
   day: "2-digit",
   hour: "numeric",
+  minute: "numeric"
 });
 
 export default function Account() {
@@ -46,7 +47,7 @@ export default function Account() {
   const { user, setUser } = useContext(userContext)
 
   navigation = navigation.filter(item => {
-    if (item.name === 'Groups' && user.role !== 'refugee') {
+    if (item.name === 'Grupuri' && user.role !== 'refugee') {
       console.log(user.role)
       return false;
     }
@@ -170,19 +171,16 @@ export default function Account() {
 
         <div className="bg-gray-50 mt-8 sm:mb-8 rounded-3xl flex-1 xl:overflow-y-auto">
           <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Account</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Cont</h1>
 
             <form onSubmit={handleSubmit} className="divide-y-slate-200 mt-6 space-y-8 divide-y">
               <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
                 <div className="sm:col-span-6">
-                  <h2 className="text-xl font-bold text-slate-900">Profile</h2>
-                  <p className="mt-1 text-sm font-medium text-slate-500">
-                    This information will be displayed publicly so be careful what you share.
-                  </p>
+                  <h2 className="text-xl font-bold text-slate-900">Profil</h2>
                 </div>
                 <div className="sm:col-span-6">
                   <label htmlFor="photo" className="block text-sm lg:text-base font-semibold leading-6 text-slate-900">
-                    Photo
+                    Poză
                   </label>
                   <div className="mt-2 flex items-center">
                     <img
@@ -215,7 +213,7 @@ export default function Account() {
                     required={false}
                     type="text"
                     placeholder={user.name}
-                    name="Full Name"
+                    name="Nume Prenume"
                     id="name"
                     onChange={(e) => {
                       setData(prevData => ({
@@ -226,33 +224,13 @@ export default function Account() {
                     autoComplete="given-name"
                   />
                 </div>
-                <div className="sm:col-span-6">
-                  <label htmlFor="description" className="block text-sm sm:text-base font-semibold leading-6 text-gray-900">
-                    Description
-                  </label>
-                  <div className="mt-2 sm:mt-4">
-                    <textarea
-                      id="description"
-                      name="description"
-                      onChange={(e) => {
-                        setData(prevData => ({
-                          ...prevData,
-                          description: e.target.value
-                        }))
-                      }}
-                      rows={4}
-                      className="block w-full rounded-xl border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6"
-                      defaultValue={''}
-                    />
-                  </div>
-                </div>
               </div>
               <div className="grid grid-cols-1 gap-y-6 pt-8 sm:grid-cols-6 sm:gap-x-6">
                 <div className="sm:col-span-6">
-                  <h2 className="text-xl font-bold text-slate-900">Personal Information</h2>
-                  <p className="mt-1 text-sm font-medium text-slate-500">
-                    This information will be displayed publicly so be careful what you share.
-                  </p>
+                  <h2 className="text-xl font-bold text-slate-900">Informație personală</h2>
+                  {/* <p className="mt-1 text-sm font-medium text-slate-500"> */}
+                  {/*   This information will be displayed publicly so be careful what you share. */}
+                  {/* </p> */}
                 </div>
                 <div className="sm:col-span-3">
                   <Input
@@ -275,7 +253,7 @@ export default function Account() {
                     required={false}
                     placeholder={user?.phone}
                     type="text"
-                    name="Phone"
+                    name="Telefon"
                     id="phone-number"
                     onChange={(e) => {
                       setData(prevData => ({
@@ -292,7 +270,7 @@ export default function Account() {
                     required={false}
                     placeholder={user?.location}
                     type="text"
-                    name="Country"
+                    name="Tara de provenienta"
                     id="country"
                     onChange={(e) => {
                       setData(prevData => ({
@@ -304,7 +282,7 @@ export default function Account() {
                   />
                 </div>
                 <p className="text-sm text-slate-500 sm:col-span-6">
-                  This account was created on{' '}
+                  Acest cont a fost creat pe {' '}
                   <time dateTime={user.createdAt}>{formatter.format(new Date(user.createdAt))}</time>.
                 </p>
               </div>
@@ -314,16 +292,10 @@ export default function Account() {
                 </div>
                 <div className="flex justify-end gap-x-3 pt-8">
                   <button
-                    type="button"
-                    className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
                     type="submit"
                     className="inline-flex justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                   >
-                    Save
+                    Salvează
                   </button>
                 </div>
               </div>

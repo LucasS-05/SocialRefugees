@@ -36,12 +36,12 @@ export const login = async (req, res) => {
 
     let user = await User.findOne({ email: email });
     let isAdmin = user.role == "admin" ? true : false;
-    if (!user) return res.status(400).json({ user: "User does not exist" });
+    if (!user) return res.status(400).json({ user: "Utilizatorul nu exista" });
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch)
-      return res.status(400).json({ password: "Invalid credentials" });
+      return res.status(400).json({ password: "User / parola invalida" });
 
     const token = jwt.sign({ id: user._id, admin: isAdmin }, process.env.JWT_SECRET);
 

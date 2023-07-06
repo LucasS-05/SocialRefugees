@@ -14,10 +14,10 @@ import {
 } from '@heroicons/react/24/outline'
 
 let navigation = [
-  { name: 'General', href: '/account', icon: UserCircleIcon, current: false },
-  { name: 'Notifications', href: '#', icon: BellIcon, current: false },
-  { name: 'Groups', href: '/creategroup', icon: UsersIcon, current: false },
-  { name: 'Dashboard', href: "dashboard", icon: ChartBarIcon, current: true }
+
+  { name: 'Cont', href: '/account', icon: UserCircleIcon, current: false },
+  { name: 'Notificari', href: '/notifications', icon: BellIcon, current: false },
+  { name: 'Dashboard', href: "/dashboard", icon: ChartBarIcon, current: true }
 ]
 
 
@@ -56,7 +56,7 @@ function GroupItem({ group, userId, noButton = false }) {
           "Content-Type": "Application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ adminId: userId, groupId: group._id }),
+        body: JSON.stringify({ adminId: userId, groupId: group._id, helpers: group.helpedBy }),
       });
       const res = await response.json()
       if (response.ok) setSuccess({ status: true, message: res.message, error: false })
@@ -90,7 +90,15 @@ function GroupItem({ group, userId, noButton = false }) {
               <circle cx={1} cy={1} r={1} />
             </svg>
             <p>
+              {console.log(group.helpers)}
               {group.members.length > 1 ? `${group.members.length} members` : `${group.members.length} member`}
+            </p>
+            <svg viewBox="0 0 2 2" className="h-0.5 w-0.5 fill-current">
+              <circle cx={1} cy={1} r={1} />
+            </svg>
+            <p>
+              {console.log(group.helpedBy)}
+              {group.helpedBy.length > 1 ? `${group.helpedBy.length} helpers` : `${group.helpedBy.length} helper`}
             </p>
           </div>
         </div>
@@ -170,7 +178,8 @@ export default function Dashboard() {
   const { user, setUser } = useContext(userContext)
 
   navigation = navigation.filter(item => {
-    if (item.name === 'Groups' && user.role !== 'refugee') {
+    if (item.name === 'Grupuri' && user.role !== 'refugee') {
+      console.log(user.role)
       return false;
     }
     if (item.name === 'Dashboard' && user.role !== 'admin')

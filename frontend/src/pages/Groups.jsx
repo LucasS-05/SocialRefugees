@@ -7,100 +7,10 @@ import { route } from "preact-router";
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 import { XCircleIcon } from '@heroicons/react/20/solid'
-
-function Error({ error }) {
-  return (
-    <div className="rounded-md bg-red-50 p-4 w-fit">
-      <div className="flex items-center">
-        <div className="flex-shrink-0">
-          <XCircleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
-        </div>
-        <div className="ml-3 mr-3">
-          <p className="text-sm text-red-700">
-            {error}
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-
-function Modal({ active, setActive, role, user }) {
-  const ref = useRef();
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setActive(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  return (
-    <div
-      class="relative z-10"
-      aria-labelledby="modal-title"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div
-        class={`${active ? "fixed" : "hidden"
-          }  inset-0 bg-gray-500 bg-opacity-25 transition-opacity`}
-      ></div>
-      <div
-        class={`${active ? "fixed" : "hidden"} inset-0 z-10 overflow-y-auto`}
-      >
-        <div
-          class={`flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0`}
-        >
-          <div
-            ref={ref}
-            class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6"
-          >
-            <div>
-              <div class="mt-3 text-center sm:mt-5">
-                <h3
-                  class="text-3xl font-semibold text-gray-900"
-                  id="modal-title"
-                >
-                  {role === "refugee"
-                    ? "Do you want to join this group?"
-                    : "Can you help?"}
-                </h3>
-              </div>
-            </div>
-            <div class="mt-5 sm:mt-6">
-              {role === "refugee" ? (
-                <button
-                  type="button"
-                  onClick={() => (user ? route("/multumim?role=refugee") : route("/login"))}
-                  class="inline-flex w-full justify-center rounded-md bg-yellow-500 px-3 py-2 text-lg font-semibold text-white shadow-sm hover:bg-yellow-400 "
-                >
-                  Yes I do!
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => route("/multumim")}
-                  class="inline-flex w-full justify-center rounded-md bg-red-500 px-3 py-2 text-lg font-semibold text-white shadow-sm hover:bg-red-400 "
-                >
-                  Yes I can!
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+import Notification from "../components/Notification";
 
 function LeftPanel({ groups, setActiveGroup, activeGroup, panelPosY }) {
+  const { user } = useContext(userContext);
   const [complete, setComplete] = useState(false);
   const groupRef = useRef()
 
@@ -127,6 +37,7 @@ function LeftPanel({ groups, setActiveGroup, activeGroup, panelPosY }) {
         <div ref={groupRef} className={` grid grid-cols-6 mb-8`}>
           {groups?.map((group, index) => {
             return (
+              group.ownerId !== user._id &&
               <Container
                 group={group}
                 id={index}
@@ -141,12 +52,12 @@ function LeftPanel({ groups, setActiveGroup, activeGroup, panelPosY }) {
   );
 }
 
-function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
+function RightPanel({ group, setGroups, activeGroup, formData, setFormData, panelPosY,
   setPanelPosY, user }) {
   const [users, setUsers] = useState([]);
   const [active, setActive] = useState(false);
+  const [success, setSuccess] = useState({ status: false, message: "" });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
   const ref = useRef()
 
@@ -212,7 +123,7 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
   };
 
   const handleTextareaChange = (e) => {
-    setError()
+    setSuccess({ status: false })
     const value = e.target.value;
 
     setFormData((prevFormData) => ({
@@ -222,7 +133,7 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
   };
 
   const handleCheckboxChange = (e, need) => {
-    setError()
+    setSuccess({ status: false })
     const isChecked = e.target.checked;
 
     setFormData((prevFormData) => {
@@ -259,20 +170,44 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
           body: JSON.stringify({ userId: user._id, groupId: group._id, needs: formData.resurse, description: formData.descriere }),
         });
         const res = await response.json()
+        if (response.ok) setSuccess({ status: true, message: res.message })
         console.log(res)
-        if (res.error) setError(res.error)
+        if (response.error) setSuccess({ status: true, error: true, message: res.error })
       } catch (e) {
         console.log(e)
       }
 
     }
-    else if (user.role == "refugee") console.log("join gr")
-    else setError("nu ati completat tot formul")
+    else if (user.role == "refugee") handleGroupRequest()
+    else setSuccess({ status: true, error: true, message: "completati tot formularul" })
+  }
+
+  const handleGroupRequest = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/groups/${group._id}/request-join`, {
+        method: 'PATCH',
+        headers: {
+          "Content-Type": "Application/json",
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ userId: user._id })
+      });
+
+      const data = await response.json()
+      console.log(data)
+      if (!response.ok) {
+        setSuccess({ status: true, error: true, message: data.message })
+        throw response.error
+      }
+      setSuccess({ status: true, message: data.message })
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   useEffect(() => {
     setLoading(false)
-    setError()
+    setSuccess({})
     // setLoading(true)
     const element = ref.current
     getUsers()
@@ -341,111 +276,118 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
         <div className="overflow-y-auto h-full">
           <div className="mx-auto pt-16 lg:pt-32 pb-16 max-w-7xl px-4 sm:px-8 lg:px-16">
             <h1 className="text-3xl sm:text-4xl font-semibold mb-12">
-              Group #{group.shortId}
+              {group?.ownerId == user._id ? "Va rugam selectati o grupa" : `Grupa #${group.shortId}`}
             </h1>
-            <div>
-              <div className="sm:flex sm:items-center">
-                <div className="sm:flex-auto">
-                  <h1 className="text-base font-semibold leading-6 text-gray-900">Membri : </h1>
-                </div>
-              </div>
-              <div className="-mx-4 mt-8 sm:-mx-0">
-                <table className="min-w-full divide-y divide-gray-300">
-                  <thead>
-                    <tr>
-                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
-                        Nume
-                      </th>
-                      <th
-                        scope="col"
-                        className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
-                      >
-                        Provenienta
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                        Role
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {users && users.map((person) => (
-                      <tr key={person.email}>
-                        <td className="w-full max-w-0 py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:w-auto sm:max-w-none sm:pl-0">
-                          {person.name}
-                          <dl className="font-normal lg:hidden">
-                            <dt className="sr-only">Provenienta</dt>
-                            <dd className="mt-1 truncate text-gray-700">{person.location}</dd>
-                          </dl>
-                        </td>
-                        <td className="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">{person.location}</td>
-                        <td className="px-3 py-4 text-sm text-gray-500">{person._id == group.ownerId ? "owner" : "member"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <form onSubmit={handleSubmit}>
-              <div className={`${user.role == "refugee" ? "hidden" : ""}`}>
-                <div className="mt-8">
-                  <fieldset>
-                    <legend className="text-base font-semibold leading-6 text-gray-900">Pot ajuta cu :</legend>
-                    <div className="max-w-sm mt-4 divide-y divide-gray-200 border-b border-t border-gray-200">
-                      {!loading && group?.needs.map((need, needId) => (
-                        <div key={needId} className="relative flex items-start py-4">
-                          <div className="min-w-0 flex-1 text-sm leading-6">
-                            <label htmlFor={`person-${need.id}`} className="select-none font-medium text-gray-900">
-                              {need}
-                            </label>
-                          </div>
-                          <div className="ml-3 flex h-6 items-center">
-                            <input
-                              id={`person-${need.id}`}
-                              name={`person-${need.id}`}
-                              type="checkbox"
-                              className="h-4 w-4 rounded border-gray-300 text-main-blue focus:outline-none focus:ring-0 focus:ring-offset-0"
-                              onChange={(e) => handleCheckboxChange(e, need)}
-                            />
-                          </div>
-                        </div>
-                      ))}
+            {group?.ownerId !== user._id &&
+              <>
+                <div>
+                  <div className="sm:flex sm:items-center">
+                    <div className="sm:flex-auto">
+                      <h1 className="text-base font-semibold leading-6 text-gray-900">Membri : </h1>
                     </div>
-                  </fieldset>
-                </div>
-                <div className="mt-8">
-                  <label htmlFor="comment" className="block font-medium text-base font-semibold leading-6 text-gray-900">
-                    <legend className="">Descrie in detaliu modul prin care ne poti ajuta : </legend>
-                  </label>
-                  <p className="mb-4">(cantitatea de mancare/apa, spatiul de cazare (camere, dimensiuni))</p>
-                  <div className="mt-2">
-                    <textarea
-                      rows={4}
-                      name="comment"
-                      id="comment"
-                      className="mb-6 block w-full max-w-sm rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-main-blue sm:text-sm sm:leading-6"
-                      defaultValue={''}
-                      onChange={(e) => handleTextareaChange(e)}
-                    />
+                  </div>
+                  <div className="-mx-4 mt-8 sm:-mx-0">
+                    <table className="min-w-full divide-y divide-gray-300">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
+                            Nume
+                          </th>
+                          <th
+                            scope="col"
+                            className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
+                          >
+                            Provenienta
+                          </th>
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            Rol
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 bg-white">
+                        {users && users.map((person) => (
+                          group.members.some(
+                            (member) => member.user === person._id && member.status === "pending"
+                          ) ? false : true &&
+                          <tr key={person._id}>
+                            <td className="w-full max-w-0 py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:w-auto sm:max-w-none sm:pl-0">
+                              {person.name}
+                              <dl className="font-normal lg:hidden">
+                                <dt className="sr-only">Provenienta</dt>
+                                <dd className="mt-1 truncate text-gray-700">{person.location}</dd>
+                              </dl>
+                            </td>
+                            <td className="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">{person.location}</td>
+                            <td className="px-3 py-4 text-sm text-gray-500">{person._id == group.ownerId ? "owner" : "membru"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              </div>
-              {error && <Error error={error} />}
-              {user?.role == "helper" ? (
-                <button
-                  type="submit"
-                  className="rounded-xl mt-6 w-fit bg-red-500 px-4 py-2 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-red-400 "
-                >
-                  Trimite solicitare
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  className="rounded-xl mt-6 w-fit bg-yellow-500 px-6 py-2 text-sm sm:text-base font-medium text-white shadow-sm hover:bg-yellow-400"
-                >
-                  Join this group
-                </button>
-              )}
-            </form>
+                <form onSubmit={handleSubmit}>
+                  <div className={`${user.role == "refugee" ? "hidden" : ""}`}>
+                    <div className="mt-8">
+                      <fieldset>
+                        <legend className="text-base font-semibold leading-6 text-gray-900">Pot ajuta cu :</legend>
+                        <div className="max-w-sm mt-4 divide-y divide-gray-200 border-b border-t border-gray-200">
+                          {!loading && group?.needs.map((need, needId) => (
+                            <div key={needId} className="relative flex items-start py-4">
+                              <div className="min-w-0 flex-1 text-sm leading-6">
+                                <label htmlFor={`person-${need.id}`} className="select-none font-medium text-gray-900">
+                                  {need}
+                                </label>
+                              </div>
+                              <div className="ml-3 flex h-6 items-center">
+                                <input
+                                  id={`person-${need.id}`}
+                                  name={`person-${need.id}`}
+                                  type="checkbox"
+                                  className="h-4 w-4 rounded border-gray-300 text-main-blue focus:outline-none focus:ring-0 focus:ring-offset-0"
+                                  onChange={(e) => handleCheckboxChange(e, need)}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </fieldset>
+                    </div>
+                    <div className="mt-8">
+                      <label htmlFor="comment" className="block font-medium text-base font-semibold leading-6 text-gray-900">
+                        <legend className="">Descrie in detaliu modul prin care ne poti ajuta : </legend>
+                      </label>
+                      <p className="mb-4">(cantitatea de mancare/apa, spatiul de cazare (camere, dimensiuni))</p>
+                      <div className="mt-2">
+                        <textarea
+                          rows={4}
+                          name="comment"
+                          id="comment"
+                          className="mb-6 block w-full max-w-sm rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-main-blue sm:text-sm sm:leading-6"
+                          defaultValue={''}
+                          onChange={(e) => handleTextareaChange(e)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {success.status && <div className="max-w-sm"><Notification success={success} setSuccess={setSuccess} /></div>}
+                  {user?.role == "helper" ? (
+                    <button
+                      type="submit"
+                      className="rounded-xl mt-6 w-fit bg-red-500 px-4 py-2 text-sm sm:text-lg font-medium text-white shadow-sm hover:bg-red-400 "
+                    >
+                      Trimite solicitare
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      className="rounded-xl mt-6 w-fit bg-yellow-500 px-4 py-2 text-sm sm:text-base font-medium text-white shadow-sm hover:bg-yellow-400"
+                    >
+                      Intră in acest grup
+                    </button>
+                  )}
+                </form>
+              </>
+            }
           </div>
         </div>
       </div>
@@ -454,7 +396,6 @@ function RightPanel({ group, activeGroup, formData, setFormData, panelPosY,
 }
 
 function Container({ group, id, activeGroup, setActiveGroup }) {
-  const { user } = useContext(userContext);
   const { members, needs, urgency, createdAt } = group;
 
   return (
@@ -465,7 +406,7 @@ function Container({ group, id, activeGroup, setActiveGroup }) {
     >
       <div className="flex justify-between items-end">
         <div className="flex flex-col">
-          <p className="">Group ID </p>
+          <p className="">Grup ID </p>
           <p className="font-semibold text-main-purple">{group.shortId}</p>
         </div>
         <p className="font-semibold">{createdAt.toLocaleString('en-ro').slice(0, 10)}</p>
@@ -531,7 +472,7 @@ export default function Groups() {
   user.role == "admin" && route("/dashboard");
 
   const [groups, setGroups] = useState();
-  const [error, setError] = useState(false);
+  const [success, setSuccess] = useState({ status: false, message: "" });
   const [activeGroup, setActiveGroup] = useState(0);
   const [panelPosY, setPanelPosY] = useState(1)
   const [loading, setLoading] = useState(true)
@@ -549,8 +490,8 @@ export default function Groups() {
       method: "GET",
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
-    if (!response.ok) setError(true);
     const data = await response.json();
+    if (!response.ok) setSuccess({ status: true, error: true, message: data.message });
     setGroups(data);
   };
 
@@ -563,7 +504,7 @@ export default function Groups() {
     };
   }, []);
 
-  return !error ? (
+  return !success.error ? (
     <div className={`${loading ? "hidden" : ""}`} ref={ref}>
       <SplitScreen>
         <LeftPanel panelPosY={panelPosY} groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} />
@@ -572,6 +513,7 @@ export default function Groups() {
             <RightPanel
               activeGroup={activeGroup}
               group={groups[activeGroup]}
+              setGroups={setGroups}
               formData={formData}
               setFormData={setFormData}
               panelPosY={panelPosY}

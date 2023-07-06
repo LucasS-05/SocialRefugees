@@ -93,7 +93,7 @@ function LeftPanel({ change, setChange, handleAnimation }) {
         >
           <div className="px-4 sm:px-6 px-8">
             <h3 className="text-xl sm:text-3xl text-white font-bold tracking-wide">
-              Ai nevoie de ajutor? →
+              Poți oferi ajutor? →
             </h3>
           </div>
         </button>

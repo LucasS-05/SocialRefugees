@@ -13,23 +13,14 @@ import { PlusIcon } from '@heroicons/react/20/solid'
 import Notification from "../components/Notification";
 
 let navigation = [
-  { name: 'General', href: '/account', icon: UserCircleIcon, current: false },
-  { name: 'Notifications', href: '#', icon: BellIcon, current: false },
-  { name: 'Groups', href: '/groups', icon: UsersIcon, current: true },
+  { name: 'Cont', href: '/account', icon: UserCircleIcon, current: false },
+  { name: 'Notificari', href: '/notifications', icon: BellIcon, current: false },
+  { name: 'Grupuri', href: '/creategroup', icon: UsersIcon, current: true },
 ]
-
-
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
-
-const formatter = new Intl.DateTimeFormat("en-RO", {
-  year: "numeric",
-  month: "long",
-  day: "2-digit",
-  hour: "numeric",
-});
 
 export default function Account() {
   const { user, setUser } = useContext(userContext)
@@ -50,13 +41,6 @@ export default function Account() {
   const [userGroupMembers, setUserGroupMembers] = useState([])
 
   const [groupExists, setGroupExists] = useState(false);
-
-  navigation = navigation.filter(item => {
-    if (item.name === 'Groups' && user.role === 'helper') {
-      return false; // Exclude 'Friends' object for admin user
-    }
-    return true; // Include all other objects
-  });
 
   const getUsersFromGroup = async () => {
     const ids = userGroup.members.map((member) => member.user)
@@ -220,12 +204,13 @@ export default function Account() {
               "Content-Type": "Application/json",
               Authorization: `Bearer ${localStorage.getItem('token')}`
             },
-            body: JSON.stringify(userGroup)
+            body: JSON.stringify({ ...userGroup, ownerName: user.name })
           });
 
           const data = await response.json()
           console.log(data)
           if (!response.ok) {
+            setSuccess({ status: true, error: true, message: data.message })
             throw new Error(response);
           }
           setSuccess({ status: true, message: data.message })
@@ -295,15 +280,15 @@ export default function Account() {
         </aside>
         <div className="bg-gray-50 rounded-3xl mt-8 sm:mb-8 flex-1 xl:overflow-y-auto">
           <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Your Group</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Grupul tău</h1>
             <form onSubmit={(e) => handleCreate(e)} className="divide-y-slate-200 mt-6 space-y-8">
               <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
                 <div className="sm:col-span-6">
-                  <h2 className="text-xl font-bold text-slate-900">{groupExists ? "Update Group" : "Create group"}</h2>
+                  <h2 className="text-xl font-bold text-slate-900">{groupExists ? "Updatează Grupul" : "Creează un grup"}</h2>
                   {
                     !groupExists &&
                     <p className="mt-1 text-sm font-medium text-slate-500">
-                      If you dont have a group, you can create one.
+                      Dacă nu ai un grup, poți face unul
                     </p>
                   }
                 </div>
@@ -314,7 +299,7 @@ export default function Account() {
                       <Input
                         required={false}
                         type="text"
-                        name="Search users"
+                        name="Caută utilizatori"
                         id="name"
                         onChange={handleSearch}
                       />
@@ -372,13 +357,13 @@ export default function Account() {
                             <thead>
                               <tr>
                                 <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
-                                  Name
+                                  Nume
                                 </th>
                                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                  Location
+                                  Proveniență
                                 </th>
                                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                  Role
+                                  Rol
                                 </th>
                                 {
                                   groupExists &&
@@ -422,7 +407,7 @@ export default function Account() {
                     </div>
                     <div className="mt-8">
                       <fieldset className="bg-white py-2 px-4 sm:px-6 lg:px-8 rounded-xl ring-1 ring-inset ring-gray-300">
-                        <p className="text-base font-semibold leading-6 text-gray-900 my-4">Needs</p>
+                        <p className="text-base font-semibold leading-6 text-gray-900 my-4">Nevoi</p>
                         <div className="divide-y divide-gray-200 border-t border-gray-200">
                           {needs.map((need, needId) => (
                             <div key={needId} className="relative flex items-start py-4">
@@ -471,7 +456,7 @@ export default function Account() {
                     type="submit"
                     className="inline-flex justify-center rounded-md bg-yellow-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-yellow-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                   >
-                    {groupExists ? "Update" : "Create"}
+                    {groupExists ? "Updatează" : "Creează"}
                   </button>
                 </div>
               </div>
