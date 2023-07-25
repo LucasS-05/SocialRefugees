@@ -38,6 +38,7 @@ export default function Account() {
 
 
   const [userGroup, setUserGroup] = useState()
+  const [isAdmin, setIsAdmin] = useState(false);
   const [userGroupMembers, setUserGroupMembers] = useState([])
 
   const [groupExists, setGroupExists] = useState(false);
@@ -71,7 +72,7 @@ export default function Account() {
   useEffect(() => {
     const fetchGroup = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/groups/${user._id}`, {
+        const response = await fetch(`http://localhost:3001/groups/${user._id}/user`, {
           method: 'POST',
           headers: {
             "Content-Type": "Application/json",
@@ -79,14 +80,15 @@ export default function Account() {
           },
         });
 
-        if (!response.ok) {
-          throw new Error(response);
-        }
+        if (!response.ok) throw console.log(await response.json())
 
         const data = await response.json();
-        if (data.length > 0) {
+        console.log(data)
+        if (data) {
+          const isUserAccepted = userGroup?.members.some(member => member.user === user._id && member.status !== "pending");
           setGroupExists(true)
-          setUserGroup(data[0])
+          setUserGroup(data.group)
+          setIsAdmin(data.isAdmin)
         }
       } catch (error) {
         console.error(error);
@@ -108,7 +110,7 @@ export default function Account() {
       });
 
       if (!response.ok) {
-        throw new Error(response);
+        console.log(await response.json());
       }
 
       const data = await response.json();
@@ -159,9 +161,35 @@ export default function Account() {
     }
   }
 
+  const handleExit = async () => {
+    console.log(userGroup)
+    try {
+      const response = await fetch(`http://localhost:3001/groups/${user._id}/delete`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "Application/json",
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ groupId: userGroup._id })
+      });
+
+      const data = await response.json()
+      if (!response.ok) {
+        setSuccess({ status: true, error: true, message: data.message })
+        throw new Error(response);
+      }
+      setSuccess({ status: true, error: false, message: data.message })
+    } catch (error) {
+      console.log(error)
+    }
+
+  }
+
   const handleCreate = async (e) => {
     e.preventDefault()
     //if group empty, create group
+    //if it works, dont change it
+    setIsAdmin(true)
     if (!userGroup) setUserGroup({
       ownerId: user._id,
       urgency: "urgent",
@@ -171,10 +199,9 @@ export default function Account() {
         role: "admin"
       }]
     })
+
     else {
       if (!groupExists) {
-        console.log(userGroup)
-        //post to groups
         try {
           const response = await fetch(`http://localhost:3001/groups/`, {
             method: 'POST',
@@ -190,7 +217,6 @@ export default function Account() {
             setSuccess({ status: true, error: true, message: data.message })
             throw new Error(response);
           }
-
           setSuccess({ status: true, error: false, message: data.message })
         } catch (error) {
           console.log(error)
@@ -284,7 +310,7 @@ export default function Account() {
             <form onSubmit={(e) => handleCreate(e)} className="divide-y-slate-200 mt-6 space-y-8">
               <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
                 <div className="sm:col-span-6">
-                  <h2 className="text-xl font-bold text-slate-900">{groupExists ? "Updatează Grupul" : "Creează un grup"}</h2>
+                  <h2 className="text-xl font-bold text-slate-900">{groupExists ? isAdmin && "Updatează Grupul" : "Creează un grup"}</h2>
                   {
                     !groupExists &&
                     <p className="mt-1 text-sm font-medium text-slate-500">
@@ -293,7 +319,7 @@ export default function Account() {
                   }
                 </div>
                 {
-                  userGroup &&
+                  userGroup && isAdmin &&
                   <div className="sm:col-span-6">
                     <div className="sm:col-span-6">
                       <Input
@@ -395,7 +421,7 @@ export default function Account() {
                                       }))
                                     }}
                                       className="text-yellow-600 hover:text-yellow-900">
-                                      {userGroup?.members.map((member) => member.user == person._id && member.role !== "admin" ? "Remove" : "")}<span className="sr-only">, {person.name}</span>
+                                      {userGroup?.members.map((member) => isAdmin & member.user == person._id ? member.role === "admin" ? "" : "Remove" : "")}<span className="sr-only">, {person.name}</span>
                                     </button>
                                   </td>
                                 </tr>
@@ -405,32 +431,35 @@ export default function Account() {
                         </div>
                       </div>
                     </div>
-                    <div className="mt-8">
-                      <fieldset className="bg-white py-2 px-4 sm:px-6 lg:px-8 rounded-xl ring-1 ring-inset ring-gray-300">
-                        <p className="text-base font-semibold leading-6 text-gray-900 my-4">Nevoi</p>
-                        <div className="divide-y divide-gray-200 border-t border-gray-200">
-                          {needs.map((need, needId) => (
-                            <div key={needId} className="relative flex items-start py-4">
-                              <div className="min-w-0 flex-1 text-sm leading-6">
-                                <label htmlFor={`person-${need.id}`} className="select-none font-medium text-gray-900">
-                                  {need.name}
-                                </label>
+                    {
+                      isAdmin &&
+                      <div className="mt-8">
+                        <fieldset className="bg-white py-2 px-4 sm:px-6 lg:px-8 rounded-xl ring-1 ring-inset ring-gray-300">
+                          <p className="text-base font-semibold leading-6 text-gray-900 my-4">Nevoi</p>
+                          <div className="divide-y divide-gray-200 border-t border-gray-200">
+                            {needs.map((need, needId) => (
+                              <div key={needId} className="relative flex items-start py-4">
+                                <div className="min-w-0 flex-1 text-sm leading-6">
+                                  <label htmlFor={`person-${need.id}`} className="select-none font-medium text-gray-900">
+                                    {need.name}
+                                  </label>
+                                </div>
+                                <div className="ml-3 flex h-6 items-center">
+                                  <input
+                                    id={`need-${need.id}`}
+                                    name={`${need.name}`}
+                                    checked={userGroup.needs.includes(need.name) ? true : false}
+                                    type="checkbox"
+                                    className="h-4 w-4 rounded border-gray-300 text-yellow-500 focus:outline-none focus:ring-0 focus:ring-offset-0"
+                                    onChange={(e) => handleCheckboxChange(e, need)}
+                                  />
+                                </div>
                               </div>
-                              <div className="ml-3 flex h-6 items-center">
-                                <input
-                                  id={`need-${need.id}`}
-                                  name={`${need.name}`}
-                                  checked={userGroup.needs.includes(need.name) ? true : false}
-                                  type="checkbox"
-                                  className="h-4 w-4 rounded border-gray-300 text-yellow-500 focus:outline-none focus:ring-0 focus:ring-offset-0"
-                                  onChange={(e) => handleCheckboxChange(e, need)}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </fieldset>
-                    </div>
+                            ))}
+                          </div>
+                        </fieldset>
+                      </div>
+                    }
                   </div>
                 </div>
               }
@@ -441,24 +470,47 @@ export default function Account() {
                     <Notification setSuccess={setSuccess} success={success} />
                   </div>
                 }
-                <div className={`flex ${userGroup ? "justify-end pt-8" : "justify-start pt-0"} gap-x-3 `}>
-                  {
-                    groupExists &&
-                    <button
-                      type="button"
-                      className="rounded-md bg-red-600 text-white px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-500"
-                      onClick={handleDelete}
-                    >
-                      Delete
-                    </button>
-                  }
-                  <button
-                    type="submit"
-                    className="inline-flex justify-center rounded-md bg-yellow-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-yellow-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                  >
-                    {groupExists ? "Updatează" : "Creează"}
-                  </button>
-                </div>
+                {
+                  <div className={`flex ${userGroup ? "justify-end pt-8" : "justify-start pt-0"} gap-x-3 `}>
+                    {
+                      isAdmin ?
+                        groupExists &&
+                        <button
+                          type="button"
+                          className="rounded-md bg-red-600 text-white px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-500"
+                          onClick={handleDelete}
+                        >
+                          Delete
+                        </button>
+                        :
+                        groupExists &&
+                        <button
+                          type="button"
+                          className="rounded-md bg-red-600 text-white px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-500"
+                          onClick={handleExit}
+                        >
+                          Iesi din grup
+                        </button>
+                    }
+                    {
+                      groupExists ?
+                        isAdmin ?
+                          <button
+                            type="submit"
+                            className="inline-flex justify-center rounded-md bg-yellow-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-yellow-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                          >
+                            Updatează
+                          </button>
+                          : "" :
+                        <button
+                          type="submit"
+                          className="inline-flex justify-center rounded-md bg-yellow-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-yellow-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                        >
+                          Creează
+                        </button>
+                    }
+                  </div>
+                }
               </div>
             </form>
           </div>

@@ -37,7 +37,6 @@ function LeftPanel({ groups, setActiveGroup, activeGroup, panelPosY }) {
         <div ref={groupRef} className={` grid grid-cols-6 mb-8`}>
           {groups?.map((group, index) => {
             return (
-              group.ownerId !== user._id &&
               <Container
                 group={group}
                 id={index}
@@ -276,9 +275,9 @@ function RightPanel({ group, setGroups, activeGroup, formData, setFormData, pane
         <div className="overflow-y-auto h-full">
           <div className="mx-auto pt-16 lg:pt-32 pb-16 max-w-7xl px-4 sm:px-8 lg:px-16">
             <h1 className="text-3xl sm:text-4xl font-semibold mb-12">
-              {group?.ownerId == user._id ? "Va rugam selectati o grupa" : `Grupa #${group.shortId}`}
+              {`Grupa #${group.shortId}`}
             </h1>
-            {group?.ownerId !== user._id &&
+            {
               <>
                 <div>
                   <div className="sm:flex sm:items-center">
@@ -441,14 +440,13 @@ function Container({ group, id, activeGroup, setActiveGroup }) {
         <div className="flex items-center space-x-4">
           <span className="font-semibold">Membri:</span>
           <div className="isolate w-fit -space-x-2 overflow-hidden">
-            {members.map((member) => {
-              return (
-                <img
-                  className="relative z-30 inline-block h-8 aspect-square rounded-full ring ring-gray-50 "
-                  src={def}
-                />
-              );
-            })}
+            {members.map((member) => (
+              member.status != "pending" &&
+              <img
+                className="relative z-30 inline-block h-8 aspect-square rounded-full ring ring-gray-50 "
+                src={def}
+              />
+            ))}
           </div>
         </div>
         <div>
@@ -486,7 +484,7 @@ export default function Groups() {
   gsap.registerPlugin(Draggable);
 
   const getGroups = async () => {
-    const response = await fetch(`http://192.168.0.109:3001/groups/`, {
+    const response = await fetch(`http://localhost:3001/groups/`, {
       method: "GET",
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });

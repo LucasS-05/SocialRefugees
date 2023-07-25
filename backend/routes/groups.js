@@ -1,5 +1,5 @@
 import express from "express";
-import { getGroups, getGroupAdmin, createGroup, addGroupHelper, updateGroup, setGroupAdmin, getAdministeredGroups, getUnadministeredGroups, deleteGroup, updateMemberStatus, joinGroup } from "../controllers/groups.js";
+import { getGroups, getGroupAdmin, createGroup, addGroupHelper, updateGroup, setGroupAdmin, getAdministeredGroups, getUnadministeredGroups, deleteGroup, updateMemberStatus, joinGroup, checkUserBelongsToGroup, deleteUserFromGroup, deleteNotification } from "../controllers/groups.js";
 
 import { verifyToken } from "../middlewares/auth.js";
 import { verifyAdmin } from "../middlewares/admin.js";
@@ -17,11 +17,14 @@ router.post("/administered", verifyToken, getAdministeredGroups);
 router.post("/", verifyToken, createGroup);
 router.post("/delete", verifyToken, deleteGroup);
 router.post("/:ownerId", verifyToken, getGroupAdmin);
+router.post("/:userId/user", verifyToken, checkUserBelongsToGroup);
+router.post("/:userId/delete", verifyToken, deleteUserFromGroup);
 // router.get("/:userId/groups", verifyToken, getGroups);
 
 router.patch("/:groupId/update", verifyToken, updateGroup);
 router.patch("/:groupId/request-join", verifyToken, joinGroup);
 router.patch("/:groupId/update-member-status", verifyToken, updateMemberStatus);
+router.patch("/delete-notification", verifyToken, deleteNotification);
 
 //o gandesc mai inclo
 //router.get("/bucket", verifyToken, verifyAdmin, getBucket);

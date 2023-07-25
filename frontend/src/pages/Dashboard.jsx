@@ -14,7 +14,6 @@ import {
 } from '@heroicons/react/24/outline'
 
 let navigation = [
-
   { name: 'Cont', href: '/account', icon: UserCircleIcon, current: false },
   { name: 'Notificari', href: '/notifications', icon: BellIcon, current: false },
   { name: 'Dashboard', href: "/dashboard", icon: ChartBarIcon, current: true }
@@ -27,26 +26,44 @@ function classNames(...classes) {
 
 function GroupItem({ group, userId, noButton = false }) {
   const [members, setMembers] = useState([])
+  const [helpers, setHelpers] = useState([])
   const [open, setOpen] = useState(false);
   const [success, setSuccess] = useState({ status: false, message: "", error: false });
 
   const getUsersFromGroup = async () => {
-    const ids = group.members.map((member) => member.user)
+    group && console.log(group)
+    const memberIds = group.members.map((member) => member.user)
+    const helperIds = group.helpedBy?.map((helper) => helper.userId)
+
     try {
-      const response = await fetch(`http://localhost:3001/users`, {
+      const response1 = await fetch(`http://localhost:3001/users`, {
         method: "POST",
         headers: {
           "Content-Type": "Application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(ids),
+        body: JSON.stringify(memberIds),
       });
-      const res = await response.json()
-      setMembers(res)
+      const res1 = await response1.json()
+      setMembers(res1)
+
+      const response2 = helperIds && await fetch(`http://localhost:3001/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "Application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(helperIds),
+      });
+      const res2 = await response2.json()
+      console.log(res2)
+      setHelpers(res2)
     } catch (e) {
       console.log(e)
     }
+
   };
+
 
   const takeUnderAdmin = async () => {
     try {
@@ -80,7 +97,7 @@ function GroupItem({ group, userId, noButton = false }) {
       >
         <div>
           <p className="text-sm font-semibold leading-6 text-gray-900">
-            Group Id : {group._id}
+            Group Id : {group.shortId}
           </p>
           <div className="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
             <p>
@@ -90,7 +107,6 @@ function GroupItem({ group, userId, noButton = false }) {
               <circle cx={1} cy={1} r={1} />
             </svg>
             <p>
-              {console.log(group.helpers)}
               {group.members.length > 1 ? `${group.members.length} members` : `${group.members.length} member`}
             </p>
             <svg viewBox="0 0 2 2" className="h-0.5 w-0.5 fill-current">
@@ -106,7 +122,6 @@ function GroupItem({ group, userId, noButton = false }) {
           <div className="flex -space-x-0.5">
             <dt className="sr-only">Members</dt>
             {members.map((member) => (
-              console.log(member),
               <dd key={member.user}>
                 <img
                   className="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white"
@@ -119,6 +134,7 @@ function GroupItem({ group, userId, noButton = false }) {
         </dl>
       </li>
       <ul role="list" className="divide-y divide-gray-100 ">
+        {open && <h3 className="font-semibold text-lg mb-2 mt-4">Membri</h3>}
         {open && members && members.map((member) => (
           <li key={member._id} className="flex gap-x-4 py-5 first:pt-0">
             <img className="h-16 w-16 flex-none rounded-full bg-gray-50" src={`http://localhost:3001/${member.picturePath ? member.picturePath : "assets/default.png"}`} alt="" />
@@ -136,6 +152,41 @@ function GroupItem({ group, userId, noButton = false }) {
                 </p>
               </div>
               <p className="mt-1 truncate text-xs leading-5 text-gray-500">{member.email}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <ul role="list" className="divide-y divide-gray-100 ">
+        {open && helpers.length > 0 && <h3 className="font-semibold text-lg mb-2 mt-4">Helperi</h3>}
+        {open && helpers && helpers.map((member) => (
+          <li key={member._id} className="flex gap-x-4 py-5 first:pt-0">
+            <img className="h-16 w-16 flex-none rounded-full bg-gray-50" src={`http://localhost:3001/${member.picturePath ? member.picturePath : "assets/default.png"}`} alt="" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-6 text-gray-900">{member.name}</p>
+              <div className="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
+                <p>
+                  {member.location}
+                </p>
+                <svg viewBox="0 0 2 2" className="h-0.5 w-0.5 fill-current">
+                  <circle cx={1} cy={1} r={1} />
+                </svg>
+                <p>
+                  {member.phone}
+                </p>
+              </div>
+              <p className="mt-1 truncate text-xs leading-5 text-gray-500">{member.email}</p>
+              <p className="mt-2 truncate text-xs leading-5 text-gray-500">Poate ajuta cu:</p>
+              <ul className="list-disc">
+                {
+                  group?.helpedBy[group?.helpedBy.findIndex((item) => item.userId == member._id)].needs.map((need) => <li className="text-xs ml-4 text-gray-500">{need}</li>)
+                }
+              </ul>
+              <p className="mt-2 text-xs leading-5 text-gray-500">
+                Descriere : <br />
+                {
+                  group?.helpedBy[group?.helpedBy.findIndex((item) => item.userId == member._id)].description
+                }
+              </p>
             </div>
           </li>
         ))}
@@ -339,14 +390,14 @@ export default function Dashboard() {
             <form className="divide-y-slate-200 mt-6 space-y-8 divide-y">
               <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
                 <div className="sm:col-span-6">
-                  <h2 className="text-xl font-bold text-slate-900">Not administered groups</h2>
+                  <h2 className="text-xl font-bold text-slate-900">Grupuri neadministrate</h2>
                 </div>
                 {
                   (unAdminGroups && unAdminGroups.length > 0) &&
                   <div className="sm:col-span-6 bg-white rounded-xl ring-1 ring-inset ring-gray-300 inline-block min-w-full py-2 align-middle px-4 sm:px-6 lg:px-8">
                     <ul role="list" className="divide-y divide-gray-100">
                       {unAdminGroups.map((group) => (
-                        <GroupItem group={group} userId={user._id} />
+                        group && <GroupItem group={group} userId={user._id} />
                       ))}
                     </ul>
                   </div>
@@ -355,14 +406,14 @@ export default function Dashboard() {
 
               <div className="grid grid-cols-1 gap-y-6 pt-8 sm:grid-cols-6 sm:gap-x-6">
                 <div className="sm:col-span-6">
-                  <h2 className="text-xl font-bold text-slate-900">Your administered groups</h2>
+                  <h2 className="text-xl font-bold text-slate-900">Grupurile tale</h2>
                 </div>
                 {
                   (groups && groups.length > 0) &&
                   <div className="sm:col-span-6 bg-white rounded-xl ring-1 ring-inset ring-gray-300 inline-block min-w-full py-2 align-middle px-4 sm:px-6 lg:px-8">
                     <ul role="list" className="divide-y divide-gray-100">
                       {groups.map((group) => (
-                        <GroupItem group={group} userId={user._id} noButton={true} />
+                        group && <GroupItem group={group} userId={user._id} noButton={true} />
                       ))}
                     </ul>
                   </div>

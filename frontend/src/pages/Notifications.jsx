@@ -54,7 +54,7 @@ export default function Notifications() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ status: 'accepted', memberId: user._id, notificationId: notificationId }),
+        body: JSON.stringify({ status: 'accepted', notificationId: notificationId, notificationType: notificationType, memberId: user._id }),
       });
 
       const data = await response.json();
@@ -149,34 +149,41 @@ export default function Notifications() {
                   <h2 className="text-xl font-bold text-slate-900">Notificările tale</h2>
                 </div>
                 <div className="sm:col-span-6">
-                  <div className="bg-white rounded-xl ring-1 ring-inset ring-gray-300 inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                  <div className="bg-white rounded-xl ring-1 ring-inset ring-gray-300 inline-block min-w-full py-2 align-middle px-4 sm:px-6 lg:px-8">
                     <ul role="list" className="divide-y divide-gray-100">
-                      {notifications?.length > 0 ? notifications.map((notification) => (
-                        <li key={notification._id} className="flex items-center justify-between gap-x-6 py-5">
-                          <div className="min-w-0">
-                            <div className="flex items-start gap-x-3">
-                              <p className="text-sm font-semibold leading-6 text-gray-900">{notification.message}</p>
-                            </div>
-                            <div className="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
-                              <p className="whitespace-nowrap">
-                                From {notification.ownerName || sender.name}
-                              </p>
-                            </div>
-                          </div>
-                          {
-                            notification.status === "unread" &&
-                            <div className="flex flex-none items-center gap-x-4">
-                              <button
-                                type='button'
-                                onClick={() => handleAccept(notification.groupId, notification.notificationType, notification._id)}
-                                className="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
-                              >
-                                Accept
-                              </button>
-                            </div>
-                          }
-                        </li>
-                      )) : "Nu aveti notificari"}
+                      {notifications?.length > 0 ? (
+                        notifications.every((notification) => notification.status === "read") ? (
+                          <li className="py-5">Nu aveti notificari</li>
+                        ) : (
+                          notifications.map((notification) =>
+                            notification.status === "read" ? null : (
+                              <li key={notification._id} className="flex items-center justify-between gap-x-6 py-5">
+                                <div className="min-w-0">
+                                  <div className="flex items-start gap-x-3">
+                                    <p className="text-sm font-semibold leading-6 text-gray-900">{notification.message}</p>
+                                  </div>
+                                  <div className="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
+                                    <p className="whitespace-nowrap">
+                                      From {notification.ownerName || sender.name}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex flex-none items-center gap-x-4">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAccept(notification.groupId, notification.notificationType, notification._id)}
+                                    className=" rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
+                                    return true>
+                                    Accept
+                                  </button>
+                                </div>
+                              </li>
+                            )
+                          )
+                        )
+                      ) : (
+                        <li className="py-5">Nu aveti notificari</li>
+                      )}
                     </ul>
                     {success.status && <Notification setSuccess={setSuccess} success={success} />}
                   </div>

@@ -29,12 +29,11 @@ export const getUsers = async (req, res) => {
 export const searchUsers = async (req, res) => {
   try {
     const { name } = req.body;
-    console.log(name)
     const users = await User.find({ name: new RegExp(name, 'i') })
-    users.filter((user) => user.role !== "helper")
-    users.save()
-    console.log("users", users);
-    res.status(200).json(users);
+    const filteredUsers = users.filter((user) => user.role !== "helper");
+
+    console.log("filteredUsers", filteredUsers);
+    res.status(200).json(filteredUsers);
   } catch (err) {
     res.status(404).json({ message: err.message });
   }

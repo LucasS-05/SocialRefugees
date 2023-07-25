@@ -7,13 +7,43 @@ import User from "../models/User.js";
 export const createGroup = async (req, res) => {
   try {
     console.log(req.body)
-    const { ownerId, members, needs, urgency } = req.body;
+    const { ownerId, members, needs, urgency, ownerName, groupId } = req.body;
     const newGroup = new Group({
       ownerId,
       members: members,
       needs: needs,
       urgency: urgency
     });
+    const pendingMembers = members.filter((member) => member.status === "pending");
+
+    if (pendingMembers) pendingMembers.forEach(async (member) => {
+      // Create a notification message
+      const notificationMessage = "Ai un request sa intri in grup";
+
+      // const existingNotification = await User.findOne({
+      //   "notifications.groupId": groupId,
+      // });
+
+      // if (existingNotification) {
+      //   res.status(409)
+      //   console.log(`Skipping duplicate notification for user ${member.user} and group ${groupId}`);
+      // }
+
+      // Update the user's notifications array with the new notification
+      await User.findByIdAndUpdate(member.user, {
+        $push: {
+          notifications: {
+            message: notificationMessage,
+            notificationType: "group_invite",
+            groupId: groupId,
+            ownerName: ownerName,
+          },
+        },
+      });
+    }
+    )
+    else console.log("no notifications to be sent")
+
 
     await newGroup.save();
 
@@ -65,25 +95,24 @@ export const updateGroup = async (req, res) => {
         "notifications.groupId": groupId,
       });
 
-      if (existingNotification) {
-        res.status(409)
-        console.log(`Skipping duplicate notification for user ${member.user} and group ${groupId}`);
-      }
+      // if (existingNotification) {
+      //   res.status(409)
+      //   console.log(`Skipping duplicate notification for user ${member.user} and group ${groupId}`);
+      // }
 
-      else {
-        // Update the user's notifications array with the new notification
-        await User.findByIdAndUpdate(member.user, {
-          $push: {
-            notifications: {
-              message: notificationMessage,
-              notificationType: "group_invite",
-              groupId: groupId,
-              ownerName: ownerName,
-            },
+      // Update the user's notifications array with the new notification
+      await User.findByIdAndUpdate(member.user, {
+        $push: {
+          notifications: {
+            message: notificationMessage,
+            notificationType: "group_invite",
+            groupId: groupId,
+            ownerName: ownerName,
           },
-        });
-      }
-    })
+        },
+      });
+    }
+    )
     else console.log("no notifications to be sent")
 
     res.status(200).json({ message: "Grup updatat cu succes" });
@@ -92,14 +121,23 @@ export const updateGroup = async (req, res) => {
   }
 };
 
+
 export const joinGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
     const { userId } = req.body;
+
     const group = await Group.findById(groupId).populate('ownerId');
 
     if (!group) {
-      return res.status(404).json({ message: '' });
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    // Check if the user is already a member of the group
+    const isUserAlreadyMember = group.members.some(member => member.user.toString() === userId);
+
+    if (isUserAlreadyMember) {
+      return res.status(409).json({ message: "Deja ati trimis request" });
     }
 
     group.members.push({
@@ -110,7 +148,7 @@ export const joinGroup = async (req, res) => {
 
     await group.save();
 
-    // cend a notification to the owner
+    // Send a notification to the owner
     const owner = group.ownerId;
     const notificationMessage = 'Un utilizator vrea sa intre la tine in grup';
 
@@ -123,10 +161,13 @@ export const joinGroup = async (req, res) => {
 
     await owner.save();
 
+    res.status(200).json({ message: "Request trimis" });
   } catch (err) {
-    console.log(err)
+    console.log(err);
+    res.status(500).json({ message: "Internal server error" });
   }
-}
+};
+
 
 
 export const updateMemberStatus = async (req, res) => {
@@ -134,14 +175,22 @@ export const updateMemberStatus = async (req, res) => {
     const { groupId } = req.params;
     const { memberId, status, notificationId } = req.body;
 
+    // Check if the notification status is already "read"
+    const user = await User.findOne({ 'notifications.groupId': groupId, 'notifications._id': notificationId });
+
+    if (user) {
+      const notification = user.notifications.find(n => n._id.toString() === notificationId);
+
+      if (notification && notification.status === 'read') {
+        return res.status(200).json({ message: 'Already processed this request' });
+      }
+    }
+
     // Update the member's status in the group
     await Group.findOneAndUpdate(
       { _id: groupId, 'members.user': memberId },
       { $set: { 'members.$.status': status } }
     );
-
-    const user = await User.findOne({ 'notifications.groupId': groupId, 'notifications._id': notificationId });
-
 
     // Set the notification status to "read" for the user
     if (user) {
@@ -158,6 +207,9 @@ export const updateMemberStatus = async (req, res) => {
     res.status(409).json({ message: err.message });
   }
 };
+
+
+
 
 export const addGroupHelper = async (req, res) => {
   try {
@@ -196,7 +248,7 @@ export const addGroupHelper = async (req, res) => {
 export const setGroupAdmin = async (req, res) => {
   try {
     const { groupId, adminId, helpers } = req.body;
-    console.log("uifneurbgyuebtvryurbtvrtbguybgtrubtguybgt", helpers)
+    console.log("askjdansfbjhbsgberj ebg", helpers)
 
     const group = await Group.findById(groupId);
     if (group.administeredBy) {
@@ -211,14 +263,30 @@ export const setGroupAdmin = async (req, res) => {
     const admin = await User.findById(adminId)
     for (const userId of helpers) {
       const user = await User.findById(userId);
+      console.log("rejtbgiurtnbguitrngiurtgiurgniu", user)
 
       if (user) {
         const notificationMessage = `Un ONG a luat grupul pe care il poti ajuta in administrare. Te rog suna la ${admin.phone} pentru mai multe detalii`;
         user.notifications.push({
           message: notificationMessage,
-          notificationType: "other",
+          notificationType: "info",
           status: "read",
-          groupId: groupId,
+        });
+
+        await user.save();
+      }
+    }
+
+    // Send notification to all members of the group
+    for (const member of group.members) {
+      const user = await User.findById(member.user);
+
+      if (user && !helpers.includes(member.user.toString())) {
+        const notificationMessage = `Grupul a fost actualizat si este acum administrat de ${admin.name}.`;
+        user.notifications.push({
+          message: notificationMessage,
+          notificationType: "info",
+          status: "read",
         });
 
         await user.save();
@@ -280,13 +348,73 @@ export const getGroupAdmin = async (req, res) => {
   }
 }
 
+export const checkUserBelongsToGroup = async (req, res) => {
+  try {
+    const { userId } = req.params;
 
-// export const deleteUserFromGroup = async (req, res) => {
-//   try {
-//     const { ownerId, } = req.body;
-//     const group = await Group.find({ ownerId });
-//     res.status(200).json(group);
-//   } catch (err) {
-//     res.status(404).json({ message: err.message });
-//   }
-// }
+    // Find groups that have the user's ID in the members array
+    const group = await Group.findOne({ "members.user": userId });
+    console.log(group)
+
+    if (group) {
+      // Check if the user has the role "admin" in the group
+      const isAdmin = group.members.some(member => member.user.toString() === userId && member.role === "admin");
+
+      if (isAdmin) {
+        // User is an admin in the group
+        res.status(200).json({ group, isAdmin: true });
+      } else {
+        // User is not an admin in the group
+        res.status(200).json({ group, isAdmin: false });
+      }
+    } else {
+      // User does not belong to any group
+      res.status(404).json({ message: "User does not belong to any group" });
+    }
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+
+export const deleteUserFromGroup = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { groupId } = req.body;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    const userIndex = group.members.findIndex(member => member.user.toString() === userId);
+
+    if (userIndex === -1) {
+      return res.status(404).json({ message: "User not found in the group" });
+    }
+
+    group.members.splice(userIndex, 1);
+
+    await group.save();
+
+    res.status(200).json({ message: "User successfully removed from the group" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const deleteNotification = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    const userId = req.user.id; // Assuming you're using authentication middleware
+
+    // Find the user and delete the notification with the given ID
+    const user = await User.findById(userId);
+    user.notifications = user.notifications.filter(notification => notification._id.toString() !== notificationId);
+    await user.save();
+
+    res.status(200).json({ message: 'Notification deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting notification' });
+  }
+};

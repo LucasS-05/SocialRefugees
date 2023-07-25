@@ -40,7 +40,7 @@ const UserSchema = new mongoose.Schema(
       {
         notificationType: {
           type: String,
-          enum: ["group_invite", "group_request", "other"],
+          enum: ["group_invite", "group_request", "info"],
           required: true,
         },
         status: {
@@ -56,9 +56,14 @@ const UserSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "Group",
         },
+        //aka from
         ownerName: {
           type: String,
         },
+        //the target of the notification 
+        targetId: {
+          type: mongoose.Schema.Types.ObjectId,
+        }
       },
     ],
     role: {

@@ -45,7 +45,7 @@ function LeftPanel({ change, setChange }) {
     }
   };
   return (
-    <div className="h-full relative">
+    <div className="h-full relative overflow-auto">
       <Navbar />
       <div className="flex flex-col px-2 sm:px-4 lg:px-8 xl:px-16 justify-center h-full">
         <div className="max-w-7xl px-4 sm:px-6 lg:px-8 ">
@@ -88,7 +88,7 @@ function LeftPanel({ change, setChange }) {
                     className={` ${selected === "helper"
                       ? "text-white hover:bg-yellow-400 bg-yellow-500 focus-visible:outline-yellow-600"
                       : "text-gray-900 bg-transparent"
-                      } rounded-l-xl ring-1 ring-inset ring-gray-300 grow text-black px-6 py-3 sm:py-3.5 text-sm sm:text-lg font-medium  shadow-sm  focus-visible:outline `}
+                      } rounded-l-xl px-6 py-2 sm:py-2.5 ring-1 ring-inset ring-gray-300 grow text-black  text-sm sm:text-lg font-medium  shadow-sm  focus-visible:outline `}
                   >
                     Helper
                   </button>
@@ -98,7 +98,7 @@ function LeftPanel({ change, setChange }) {
                     className={` ${selected === "refugee"
                       ? "text-white hover:bg-yellow-400 bg-yellow-500 focus-visible:outline-yellow-600"
                       : "text-gray-900 ring-1 ring-inset ring-gray-300 bg-transparent"
-                      } rounded-r-xl px-6 py-3 sm:py-3.5 text-sm grow sm:text-lg font-medium shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
+                      } rounded-r-xl px-6 py-2 sm:py-2.5 text-sm grow sm:text-lg font-medium shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
                   >
                     Refugee
                   </button>
@@ -130,7 +130,7 @@ function LeftPanel({ change, setChange }) {
 
 function RightPanel() {
   return (
-    <div className="h-full rounded-tl-[8rem] overflow-hidden">
+    <div className="h-full rounded-tl-[8rem] overflow-hidden hidden lg:block">
       <img
         src={yellow}
         className="min-w-full h-full object-cover object-left"
