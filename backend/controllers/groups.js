@@ -270,7 +270,7 @@ export const setGroupAdmin = async (req, res) => {
         user.notifications.push({
           message: notificationMessage,
           notificationType: "info",
-          status: "read",
+          status: "unread",
         });
 
         await user.save();
@@ -282,11 +282,11 @@ export const setGroupAdmin = async (req, res) => {
       const user = await User.findById(member.user);
 
       if (user && !helpers.includes(member.user.toString())) {
-        const notificationMessage = `Grupul a fost actualizat si este acum administrat de ${admin.name}.`;
+        const notificationMessage = `Grupul a fost actualizat si este acum administrat de ${admin.name}. Va rugam sa veniti la ${admin.location} sau puteti sa sunati la ${admin.phone} pentru mai multe detalii.`;
         user.notifications.push({
           message: notificationMessage,
           notificationType: "info",
-          status: "read",
+          status: "unread",
         });
 
         await user.save();
